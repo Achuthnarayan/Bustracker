@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Bus Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="container">
+  <h2>Bus Tracking System</h2>
+  <p class="subtitle">College Bus Real-Time Tracking</p>
+
+  <form id="loginForm" onsubmit="return false;">
+    <input type="text" id="collegeId" placeholder="College ID" autocomplete="username" required>
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password" required>
+
+    <button type="submit" id="loginBtn" onclick="login()">Login</button>
+    <button type="button" class="btn-secondary" onclick="goSignup()">Sign Up</button>
+  </form>
+</div>
+
+<div id="popup" class="popup"></div>
+
+<script src="config.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/session.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+
+<script>
+// Check if already logged in
+if (SessionManager.isAuthenticated()) {
+  window.location.href = 'dashboard.html';
+}
+
+async function login() {
+  UI.clearAllErrors();
+  
+  const collegeId = document.getElementById('collegeId').value;
+  const password = document.getElementById('password').value;
+  
+  // Validate inputs
+  const idValidation = Validator.validateCollegeId(collegeId);
+  if (!idValidation.valid) {
+    UI.setInputError('collegeId', idValidation.message);
+    return;
+  }
+  
+  const pwdValidation = Validator.validatePassword(password);
+  if (!pwdValidation.valid) {
+    UI.setInputError('password', pwdValidation.message);
+    return;
+  }
+  
+  UI.showLoading('loginBtn');
+  
+  try {
+    // Call actual API
+    const response = await API.login(idValidation.value, password);
+    
+    SessionManager.setToken(response.token);
+    SessionManager.setUser(response.user);
+    
+    UI.showSuccess('Login Successful!');
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 1000);
+    
+  } catch (error) {
+    UI.hideLoading('loginBtn', 'Login');
+    UI.showError(error.message || 'Login failed. Please try again.');
+  }
+}
+
+function goSignup() {
+  window.location.href = 'signup.html';
+}
+
+// Allow Enter key to submit
+document.getElementById('loginForm').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    login();
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Bus Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="container dashboard">
+  <div class="user-info">
+    <h2>Welcome, <span id="userName">User</span>!</h2>
+    <p class="user-id">ID: <span id="userCollegeId"></span></p>
+  </div>
+
+  <div class="dashboard-grid">
+    <button class="dashboard-btn" onclick="goTrack()">
+      <span class="btn-icon">📍</span>
+      Track Your Bus
+    </button>
+    
+    <button class="dashboard-btn" onclick="goTickets()">
+      <span class="btn-icon">🎫</span>
+      Buy Tickets
+    </button>
+    
+    <button class="dashboard-btn" onclick="goRoutes()">
+      <span class="btn-icon">🗺️</span>
+      View Routes
+    </button>
+    
+    <button class="dashboard-btn btn-secondary" onclick="logout()">
+      <span class="btn-icon">🚪</span>
+      Logout
+    </button>
+  </div>
+
+  <div class="info-card">
+    <h3>System Status</h3>
+    <div id="systemStatus">
+      <p>🟢 All buses operational</p>
+      <p>📡 GPS tracking active</p>
+    </div>
+  </div>
+</div>
+
+<div id="popup" class="popup"></div>
+
+<script src="config.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/session.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+
+<script>
+// Check authentication
+if (!SessionManager.requireAuth()) {
+  // Will redirect to login if not authenticated
+}
+
+// Load user info
+const user = SessionManager.getUser();
+if (user) {
+  document.getElementById('userName').textContent = user.name;
+  document.getElementById('userCollegeId').textContent = user.collegeId;
+}
+
+function goTrack() {
+  window.location.href = 'track.html';
+}
+
+function goTickets() {
+  window.location.href = 'tickets.html';
+}
+
+function goRoutes() {
+  window.location.href = 'routes.html';
+}
+
+function logout() {
+  if (confirm('Are you sure you want to logout?')) {
+    SessionManager.clearSession();
+    UI.showSuccess('Logged out successfully');
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1000);
+  }
+}
+
+// Load system status
+async function loadSystemStatus() {
+  try {
+    // Fetch real status from API
+    const response = await fetch(`${CONFIG.API_BASE_URL.replace('/api', '')}/api/health`);
+    const status = await response.json();
+    
+    document.getElementById('systemStatus').innerHTML = `
+      <p>🟢 ${status.activeBuses} buses operational</p>
+      <p>📡 GPS tracking active</p>
+      <p>👥 ${status.registeredUsers} registered users</p>
+    `;
+  } catch (error) {
+    console.error('Failed to load system status:', error);
+    document.getElementById('systemStatus').innerHTML = `
+      <p>⚠️ Unable to fetch system status</p>
+    `;
+  }
+}
+
+loadSystemStatus();
+</script>
+
+</body>
+</html>

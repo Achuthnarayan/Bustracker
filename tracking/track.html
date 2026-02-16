@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Track Bus - Bus Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="container track-page">
+  <h2>Track Your Bus</h2>
+  <button class="back-btn" onclick="goBack()">← Back</button>
+
+  <div class="search-section">
+    <input type="text" id="searchInput" placeholder="Enter Bus Number (e.g., BUS01)">
+    <button id="trackBtn" onclick="searchBus()">Track Now</button>
+  </div>
+
+  <div id="busInfo" class="bus-info" style="display:none;">
+    <h3>Bus Information</h3>
+    <p><strong>Bus Number:</strong> <span id="busNumber"></span></p>
+    <p><strong>Route:</strong> <span id="busRoute"></span></p>
+    <p><strong>Status:</strong> <span id="busStatus"></span></p>
+    <p><strong>Last Updated:</strong> <span id="lastUpdate"></span></p>
+  </div>
+
+  <div id="map" class="map-container"></div>
+  
+  <div id="errorMessage" class="error-box" style="display:none;"></div>
+</div>
+
+<div id="popup" class="popup"></div>
+
+<script src="config.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/session.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+
+<script>
+// Check authentication
+SessionManager.requireAuth();
+
+let updateInterval = null;
+
+async function searchBus() {
+  UI.clearAllErrors();
+  
+  const query = document.getElementById('searchInput').value;
+  
+  // Validate bus number
+  const validation = Validator.validateBusNumber(query);
+  if (!validation.valid) {
+    UI.setInputError('searchInput', validation.message);
+    showError(validation.message);
+    return;
+  }
+  
+  UI.showLoading('trackBtn');
+  
+  try {
+    // Fetch real GPS data from backend
+    const busData = await API.getBusLocation(validation.value);
+    
+    displayBusInfo(busData);
+    displayMap(busData);
+    
+    // Start auto-update
+    startAutoUpdate(validation.value);
+    
+    UI.hideLoading('trackBtn', 'Track Now');
+    UI.showSuccess('Bus located successfully!');
+    
+  } catch (error) {
+    UI.hideLoading('trackBtn', 'Track Now');
+    showError(error.message || 'Bus not found or GPS unavailable');
+  }
+}
+
+function displayBusInfo(busData) {
+  document.getElementById('busNumber').textContent = busData.busNumber;
+  document.getElementById('busRoute').textContent = busData.route;
+  document.getElementById('busStatus').textContent = busData.status;
+  document.getElementById('lastUpdate').textContent = new Date(busData.timestamp).toLocaleString();
+  document.getElementById('busInfo').style.display = 'block';
+}
+
+function displayMap(busData) {
+  const mapDiv = document.getElementById('map');
+  
+  // Using Google Maps embed (in production, use Google Maps API or Leaflet.js)
+  mapDiv.innerHTML = `
+    <iframe 
+      width="100%" 
+      height="400"
+      frameborder="0"
+      style="border:0; border-radius:8px;"
+      src="https://www.google.com/maps?q=${busData.latitude},${busData.longitude}&output=embed&z=15"
+      allowfullscreen>
+    </iframe>
+    <p class="map-note">📍 Current Location: ${busData.latitude.toFixed(6)}, ${busData.longitude.toFixed(6)}</p>
+  `;
+}
+
+function startAutoUpdate(busNumber) {
+  // Clear existing interval
+  if (updateInterval) {
+    clearInterval(updateInterval);
+  }
+  
+  // Update every 10 seconds
+  updateInterval = setInterval(async () => {
+    try {
+      const busData = await API.getBusLocation(busNumber);
+      displayBusInfo(busData);
+      displayMap(busData);
+    } catch (error) {
+      console.error('Auto-update failed:', error);
+    }
+  }, CONFIG.MAP.UPDATE_INTERVAL);
+}
+
+function showError(message) {
+  const errorDiv = document.getElementById('errorMessage');
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+  document.getElementById('busInfo').style.display = 'none';
+  document.getElementById('map').innerHTML = '';
+}
+
+function goBack() {
+  if (updateInterval) {
+    clearInterval(updateInterval);
+  }
+  window.location.href = 'dashboard.html';
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  if (updateInterval) {
+    clearInterval(updateInterval);
+  }
+});
+</script>
+
+</body>
+</html>

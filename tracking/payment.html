@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment - Bus Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="container">
+  <h2>Payment</h2>
+  <button class="back-btn" onclick="goBack()">← Back</button>
+
+  <div class="payment-summary">
+    <h3>Order Summary</h3>
+    <div id="details"></div>
+  </div>
+
+  <div class="payment-methods">
+    <h3>Select Payment Method</h3>
+    
+    <div class="payment-option" onclick="selectPayment('upi')">
+      <input type="radio" name="payment" id="upi" value="upi">
+      <label for="upi">
+        <span class="payment-icon">📱</span>
+        <span>UPI Payment</span>
+      </label>
+    </div>
+
+    <div class="payment-option" onclick="selectPayment('card')">
+      <input type="radio" name="payment" id="card" value="card">
+      <label for="card">
+        <span class="payment-icon">💳</span>
+        <span>Credit/Debit Card</span>
+      </label>
+    </div>
+
+    <div class="payment-option" onclick="selectPayment('netbanking')">
+      <input type="radio" name="payment" id="netbanking" value="netbanking">
+      <label for="netbanking">
+        <span class="payment-icon">🏦</span>
+        <span>Net Banking</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="loader" id="loader" style="display:none;"></div>
+
+  <button id="payBtn" onclick="pay()">Proceed to Pay</button>
+</div>
+
+<div id="popup" class="popup"></div>
+
+<script src="config.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/session.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+
+<script>
+// Check authentication
+SessionManager.requireAuth();
+
+let selectedPaymentMethod = null;
+
+const ticketType = localStorage.getItem('ticketType');
+const routeName = localStorage.getItem('routeName');
+const amount = localStorage.getItem('amount');
+
+if (!ticketType || !routeName || !amount) {
+  UI.showError('Invalid order. Please select ticket and route again.');
+  setTimeout(() => {
+    window.location.href = 'tickets.html';
+  }, 2000);
+}
+
+document.getElementById('details').innerHTML = `
+  <div class="summary-row">
+    <span>Ticket Type:</span>
+    <span>${ticketType}</span>
+  </div>
+  <div class="summary-row">
+    <span>Route:</span>
+    <span>${routeName}</span>
+  </div>
+  <div class="summary-row total">
+    <span>Total Amount:</span>
+    <span>₹${amount}</span>
+  </div>
+`;
+
+function selectPayment(method) {
+  selectedPaymentMethod = method;
+  document.getElementById(method).checked = true;
+}
+
+async function pay() {
+  if (!selectedPaymentMethod) {
+    UI.showError('Please select a payment method');
+    return;
+  }
+
+  const user = SessionManager.getUser();
+  
+  UI.showLoading('payBtn');
+  document.getElementById('loader').style.display = 'block';
+
+  try {
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // In production, this will call actual payment gateway
+    const paymentData = {
+      userId: user.id,
+      ticketType: ticketType,
+      route: routeName,
+      amount: amount,
+      paymentMethod: selectedPaymentMethod,
+      timestamp: new Date().toISOString()
+    };
+
+    // Save ticket
+    const tickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+    tickets.push({
+      id: 'TKT' + Date.now(),
+      ...paymentData,
+      status: 'Active'
+    });
+    localStorage.setItem('tickets', JSON.stringify(tickets));
+
+    // Clear order data
+    localStorage.removeItem('ticketType');
+    localStorage.removeItem('routeName');
+    localStorage.removeItem('amount');
+    localStorage.removeItem('selectedRoute');
+
+    UI.showSuccess('Payment Successful!');
+
+    setTimeout(() => {
+      // In production, redirect to payment gateway
+      if (selectedPaymentMethod === 'upi') {
+        // UPI deep link (example)
+        // window.location.href = `upi://pay?pa=college@upi&pn=BusTicket&am=${amount}&tn=Ticket`;
+      }
+      window.location.href = 'dashboard.html';
+    }, 2000);
+
+  } catch (error) {
+    document.getElementById('loader').style.display = 'none';
+    UI.hideLoading('payBtn', 'Proceed to Pay');
+    UI.showError('Payment failed. Please try again.');
+  }
+}
+
+function goBack() {
+  window.location.href = 'routes.html';
+}
+</script>
+
+</body>
+</html>
