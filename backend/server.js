@@ -521,9 +521,9 @@ app.get('/api/health', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚌 Bus Tracking Server running on port ${PORT}`);
-  console.log(`📡 ESP32 endpoint: http://localhost:${PORT}/api/hardware/location`);
-  console.log(`🌐 Frontend: http://localhost:${PORT}`);
+  console.log(`Bus Tracking Server running on port ${PORT}`);
+  console.log(`ESP32 endpoint: http://localhost:${PORT}/api/hardware/location`);
+  console.log(`Frontend: http://localhost:${PORT}`);
 });
 
 module.exports = app;

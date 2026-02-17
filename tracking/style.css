@@ -247,10 +247,12 @@ button:disabled {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  font-size: 16px;
 }
 
 .dashboard-btn::after {
@@ -271,15 +273,6 @@ button:disabled {
 
 .dashboard-btn:hover {
   transform: translateY(-5px) scale(1.02);
-}
-
-.btn-icon {
-  font-size: 36px;
-  transition: transform 0.3s ease;
-}
-
-.dashboard-btn:hover .btn-icon {
-  transform: scale(1.2) rotate(5deg);
 }
 
 .info-card {
@@ -439,15 +432,8 @@ button:disabled {
   box-shadow: 0 20px 50px rgba(91, 143, 214, 0.22);
 }
 
-.ticket-icon {
-  font-size: 56px;
-  display: block;
-  margin-bottom: 18px;
-  transition: transform 0.4s ease;
-}
-
-.ticket-card:hover .ticket-icon {
-  transform: scale(1.2) rotate(10deg);
+.ticket-card:hover {
+  transform: scale(1.05);
 }
 
 .ticket-card h3 {
@@ -553,10 +539,6 @@ button:disabled {
   cursor: pointer;
   width: 100%;
   font-weight: 600;
-}
-
-.payment-icon {
-  font-size: 28px;
 }
 
 /* Track Page Styles */

@@ -10,7 +10,7 @@
 
 <div class="container dashboard operator-dashboard">
   <div class="user-info">
-    <h2>🚌 Bus Operator</h2>
+    <h2>Bus Operator Dashboard</h2>
     <p class="user-id">Bus: <span id="busNumber"></span></p>
     <p class="user-id">Route: <span id="busRoute"></span></p>
   </div>
@@ -18,35 +18,32 @@
   <div class="bus-control-panel">
     <div class="status-card" id="statusCard">
       <h3>Bus Status</h3>
-      <p class="status-text" id="statusText">🔴 Not Started</p>
+      <p class="status-text" id="statusText">Not Started</p>
       <p class="location-text" id="locationText">Location: Not tracking</p>
     </div>
 
     <div class="control-buttons">
       <button id="startBtn" class="btn-start" onclick="startBus()">
-        <span class="btn-icon">▶️</span>
         Start Bus Service
       </button>
       
       <button id="stopBtn" class="btn-stop" onclick="stopBus()" style="display:none;">
-        <span class="btn-icon">⏹️</span>
         Stop Bus Service
       </button>
       
       <button class="btn-secondary" onclick="logout()">
-        <span class="btn-icon">🚪</span>
         Logout
       </button>
     </div>
   </div>
 
   <div class="info-card">
-    <h3>Live Tracking Info</h3>
+    <h3>Live Tracking Information</h3>
     <div id="trackingInfo">
-      <p>📍 Latitude: <span id="latitude">--</span></p>
-      <p>📍 Longitude: <span id="longitude">--</span></p>
-      <p>⏱️ Last Update: <span id="lastUpdate">--</span></p>
-      <p>🎯 Accuracy: <span id="accuracy">--</span></p>
+      <p>Latitude: <span id="latitude">--</span></p>
+      <p>Longitude: <span id="longitude">--</span></p>
+      <p>Last Update: <span id="lastUpdate">--</span></p>
+      <p>Accuracy: <span id="accuracy">--</span></p>
     </div>
   </div>
 </div>
@@ -100,7 +97,7 @@ async function startBus() {
     // Update UI
     document.getElementById('startBtn').style.display = 'none';
     document.getElementById('stopBtn').style.display = 'block';
-    document.getElementById('statusText').innerHTML = '🟢 Bus Running';
+    document.getElementById('statusText').innerHTML = 'Bus Running';
     document.getElementById('statusCard').style.background = 'linear-gradient(135deg, #86efac 0%, #6ee7b7 100%)';
     
     UI.showSuccess('Bus service started! Location tracking active.');
@@ -127,7 +124,7 @@ function stopBus() {
   // Update UI
   document.getElementById('startBtn').style.display = 'block';
   document.getElementById('stopBtn').style.display = 'none';
-  document.getElementById('statusText').innerHTML = '🔴 Not Started';
+  document.getElementById('statusText').innerHTML = 'Not Started';
   document.getElementById('statusCard').style.background = 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)';
   document.getElementById('locationText').textContent = 'Location: Not tracking';
   

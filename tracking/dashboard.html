@@ -16,22 +16,18 @@
 
   <div class="dashboard-grid">
     <button class="dashboard-btn" onclick="goTrack()">
-      <span class="btn-icon">📍</span>
       Track Your Bus
     </button>
     
     <button class="dashboard-btn" onclick="goTickets()">
-      <span class="btn-icon">🎫</span>
       Buy Tickets
     </button>
     
     <button class="dashboard-btn" onclick="goRoutes()">
-      <span class="btn-icon">🗺️</span>
       View Routes
     </button>
     
     <button class="dashboard-btn btn-secondary" onclick="logout()">
-      <span class="btn-icon">🚪</span>
       Logout
     </button>
   </div>
@@ -39,8 +35,8 @@
   <div class="info-card">
     <h3>System Status</h3>
     <div id="systemStatus">
-      <p>🟢 All buses operational</p>
-      <p>📡 GPS tracking active</p>
+      <p>All buses operational</p>
+      <p>GPS tracking active</p>
     </div>
   </div>
 </div>
@@ -96,14 +92,14 @@ async function loadSystemStatus() {
     const status = await response.json();
     
     document.getElementById('systemStatus').innerHTML = `
-      <p>🟢 ${status.activeBuses} buses operational</p>
-      <p>📡 GPS tracking active</p>
-      <p>👥 ${status.registeredUsers} registered users</p>
+      <p>${status.activeBuses} buses operational</p>
+      <p>GPS tracking active</p>
+      <p>${status.registeredUsers} registered users</p>
     `;
   } catch (error) {
     console.error('Failed to load system status:', error);
     document.getElementById('systemStatus').innerHTML = `
-      <p>⚠️ Unable to fetch system status</p>
+      <p>Unable to fetch system status</p>
     `;
   }
 }
