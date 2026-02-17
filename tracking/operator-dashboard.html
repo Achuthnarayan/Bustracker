@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Operator Dashboard - Bus Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="container dashboard operator-dashboard">
+  <div class="user-info">
+    <h2>🚌 Bus Operator</h2>
+    <p class="user-id">Bus: <span id="busNumber"></span></p>
+    <p class="user-id">Route: <span id="busRoute"></span></p>
+  </div>
+
+  <div class="bus-control-panel">
+    <div class="status-card" id="statusCard">
+      <h3>Bus Status</h3>
+      <p class="status-text" id="statusText">🔴 Not Started</p>
+      <p class="location-text" id="locationText">Location: Not tracking</p>
+    </div>
+
+    <div class="control-buttons">
+      <button id="startBtn" class="btn-start" onclick="startBus()">
+        <span class="btn-icon">▶️</span>
+        Start Bus Service
+      </button>
+      
+      <button id="stopBtn" class="btn-stop" onclick="stopBus()" style="display:none;">
+        <span class="btn-icon">⏹️</span>
+        Stop Bus Service
+      </button>
+      
+      <button class="btn-secondary" onclick="logout()">
+        <span class="btn-icon">🚪</span>
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <div class="info-card">
+    <h3>Live Tracking Info</h3>
+    <div id="trackingInfo">
+      <p>📍 Latitude: <span id="latitude">--</span></p>
+      <p>📍 Longitude: <span id="longitude">--</span></p>
+      <p>⏱️ Last Update: <span id="lastUpdate">--</span></p>
+      <p>🎯 Accuracy: <span id="accuracy">--</span></p>
+    </div>
+  </div>
+</div>
+
+<div id="popup" class="popup"></div>
+
+<script src="config.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/session.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+
+<script>
+// Check authentication
+if (!SessionManager.requireAuth()) {
+  window.location.href = 'operator-login.html';
+}
+
+const user = SessionManager.getUser();
+if (!user || user.role !== 'operator') {
+  UI.showError('Access denied. Operators only.');
+  setTimeout(() => {
+    window.location.href = 'operator-login.html';
+  }, 2000);
+}
+
+// Display operator info
+document.getElementById('busNumber').textContent = user.busNumber || 'N/A';
+document.getElementById('busRoute').textContent = user.route || 'N/A';
+
+let isTracking = false;
+let watchId = null;
+let locationUpdateInterval = null;
+
+async function startBus() {
+  if (!navigator.geolocation) {
+    UI.showError('Geolocation is not supported by your browser');
+    return;
+  }
+
+  UI.showLoading('startBtn');
+
+  try {
+    // Request location permission
+    const position = await getCurrentPosition();
+    
+    // Start tracking
+    isTracking = true;
+    startLocationTracking();
+    
+    // Update UI
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'block';
+    document.getElementById('statusText').innerHTML = '🟢 Bus Running';
+    document.getElementById('statusCard').style.background = 'linear-gradient(135deg, #86efac 0%, #6ee7b7 100%)';
+    
+    UI.showSuccess('Bus service started! Location tracking active.');
+    
+  } catch (error) {
+    UI.hideLoading('startBtn', 'Start Bus Service');
+    UI.showError('Failed to start location tracking: ' + error.message);
+  }
+}
+
+function stopBus() {
+  if (watchId) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  
+  if (locationUpdateInterval) {
+    clearInterval(locationUpdateInterval);
+    locationUpdateInterval = null;
+  }
+  
+  isTracking = false;
+  
+  // Update UI
+  document.getElementById('startBtn').style.display = 'block';
+  document.getElementById('stopBtn').style.display = 'none';
+  document.getElementById('statusText').innerHTML = '🔴 Not Started';
+  document.getElementById('statusCard').style.background = 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)';
+  document.getElementById('locationText').textContent = 'Location: Not tracking';
+  
+  UI.showSuccess('Bus service stopped.');
+}
+
+function getCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    });
+  });
+}
+
+function startLocationTracking() {
+  // Watch position continuously
+  watchId = navigator.geolocation.watchPosition(
+    async (position) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const accuracy = position.coords.accuracy;
+      const speed = position.coords.speed || 0;
+      const heading = position.coords.heading || 0;
+      
+      // Update UI
+      document.getElementById('latitude').textContent = lat.toFixed(6);
+      document.getElementById('longitude').textContent = lng.toFixed(6);
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+      document.getElementById('accuracy').textContent = accuracy.toFixed(2) + ' meters';
+      document.getElementById('locationText').textContent = `Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      
+      // Send to server
+      try {
+        await API.updateBusLocation(user.busNumber, {
+          latitude: lat,
+          longitude: lng,
+          speed: speed,
+          heading: heading,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('Failed to update location:', error);
+      }
+    },
+    (error) => {
+      console.error('Location error:', error);
+      UI.showError('Location tracking error: ' + error.message);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    }
+  );
+}
+
+function logout() {
+  if (isTracking) {
+    if (!confirm('Bus is still running. Are you sure you want to logout?')) {
+      return;
+    }
+    stopBus();
+  }
+  
+  SessionManager.clearSession();
+  UI.showSuccess('Logged out successfully');
+  setTimeout(() => {
+    window.location.href = 'operator-login.html';
+  }, 1000);
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  if (watchId) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+  if (locationUpdateInterval) {
+    clearInterval(locationUpdateInterval);
+  }
+});
+</script>
+
+<style>
+.operator-dashboard {
+  max-width: 600px;
+}
+
+.bus-control-panel {
+  margin: 20px 0;
+}
+
+.status-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 25px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 2px solid #93c5fd;
+  transition: all 0.3s ease;
+}
+
+.status-card h3 {
+  color: #1e40af;
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.status-text {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 10px 0;
+  color: #1e3a8a;
+}
+
+.location-text {
+  font-size: 14px;
+  color: #475569;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.control-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-start {
+  background: linear-gradient(135deg, #86efac 0%, #6ee7b7 100%);
+  box-shadow: 0 4px 15px rgba(134, 239, 172, 0.3);
+}
+
+.btn-start:hover {
+  background: linear-gradient(135deg, #6ee7b7 0%, #5edfaa 100%);
+  box-shadow: 0 8px 25px rgba(134, 239, 172, 0.4);
+}
+
+.btn-stop {
+  background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
+  box-shadow: 0 4px 15px rgba(252, 165, 165, 0.3);
+}
+
+.btn-stop:hover {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  box-shadow: 0 8px 25px rgba(252, 165, 165, 0.4);
+}
+
+#trackingInfo p {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(147, 197, 253, 0.3);
+}
+
+#trackingInfo p:last-child {
+  border-bottom: none;
+}
+
+#trackingInfo span {
+  font-weight: 700;
+  color: #1e3a8a;
+}
+</style>
+
+</body>
+</html>

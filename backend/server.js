@@ -30,6 +30,7 @@ const users = [
     phone: '9876543210',
     email: 'john@college.edu',
     password: 'password123',
+    role: 'student',
     createdAt: new Date().toISOString()
   },
   {
@@ -39,6 +40,7 @@ const users = [
     phone: '9876543211',
     email: 'jane@college.edu',
     password: 'password123',
+    role: 'student',
     createdAt: new Date().toISOString()
   },
   {
@@ -48,6 +50,66 @@ const users = [
     phone: '9876543212',
     email: 'mike@college.edu',
     password: 'password123',
+    role: 'student',
+    createdAt: new Date().toISOString()
+  }
+];
+
+// Hardcoded bus operators
+const operators = [
+  {
+    id: 1,
+    name: 'Rajesh Kumar',
+    operatorId: 'OP001',
+    password: 'operator123',
+    busNumber: 'BUS01',
+    route: 'Route A - Main Campus',
+    phone: '9876543220',
+    role: 'operator',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 2,
+    name: 'Suresh Patel',
+    operatorId: 'OP002',
+    password: 'operator123',
+    busNumber: 'BUS02',
+    route: 'Route B - North Campus',
+    phone: '9876543221',
+    role: 'operator',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 3,
+    name: 'Amit Singh',
+    operatorId: 'OP003',
+    password: 'operator123',
+    busNumber: 'BUS03',
+    route: 'Route C - South Campus',
+    phone: '9876543222',
+    role: 'operator',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 4,
+    name: 'Vijay Sharma',
+    operatorId: 'OP004',
+    password: 'operator123',
+    busNumber: 'BUS04',
+    route: 'Route A - Main Campus',
+    phone: '9876543223',
+    role: 'operator',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 5,
+    name: 'Ravi Verma',
+    operatorId: 'OP005',
+    password: 'operator123',
+    busNumber: 'BUS05',
+    route: 'Route B - North Campus',
+    phone: '9876543224',
+    role: 'operator',
     createdAt: new Date().toISOString()
   }
 ];
@@ -251,6 +313,38 @@ app.post('/api/auth/login', (req, res) => {
 // Logout
 app.post('/api/auth/logout', authenticateToken, (req, res) => {
   res.json({ message: 'Logout successful' });
+});
+
+// ============ Operator Authentication Routes ============
+
+// Operator Login
+app.post('/api/auth/operator/login', (req, res) => {
+  const { operatorId, password } = req.body;
+
+  const operator = operators.find(op => op.operatorId === operatorId && op.password === password);
+
+  if (!operator) {
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+
+  const token = jwt.sign(
+    { id: operator.id, operatorId: operator.operatorId, role: 'operator' },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+
+  res.json({
+    message: 'Login successful',
+    token,
+    user: {
+      id: operator.id,
+      name: operator.name,
+      operatorId: operator.operatorId,
+      busNumber: operator.busNumber,
+      route: operator.route,
+      role: 'operator'
+    }
+  });
 });
 
 // ============ Bus Tracking Routes ============

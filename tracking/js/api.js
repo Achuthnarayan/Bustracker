@@ -46,6 +46,11 @@ class API {
     return await this.request('/auth/logout', 'POST');
   }
   
+  // Operator Authentication APIs
+  static async operatorLogin(operatorId, password) {
+    return await this.request('/auth/operator/login', 'POST', { operatorId, password });
+  }
+  
   // Bus Tracking APIs
   static async getBusLocation(busNumber) {
     return await this.request(`/buses/${busNumber}/location`);
@@ -76,11 +81,11 @@ class API {
   static async updateBusLocation(busId, locationData) {
     return await this.request('/hardware/location', 'POST', {
       busId,
-      latitude: locationData.lat,
-      longitude: locationData.lng,
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
       speed: locationData.speed || 0,
       heading: locationData.heading || 0,
-      timestamp: new Date().toISOString()
+      timestamp: locationData.timestamp || new Date().toISOString()
     });
   }
   
