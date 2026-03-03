@@ -15,20 +15,20 @@
   </div>
 
   <div class="dashboard-grid">
-    <button class="dashboard-btn" onclick="goTrack()">
-      Track Your Bus
+    <button class="dashboard-btn" onclick="goLiveTrack()" style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);">
+      🗺️ Live Map Tracking
     </button>
     
     <button class="dashboard-btn" onclick="goTickets()">
-      Buy Tickets
+      🎫 Buy Tickets
     </button>
     
     <button class="dashboard-btn" onclick="goRoutes()">
-      View Routes
+      🚌 View Routes
     </button>
     
     <button class="dashboard-btn btn-secondary" onclick="logout()">
-      Logout
+      🚪 Logout
     </button>
   </div>
 
@@ -60,6 +60,10 @@ const user = SessionManager.getUser();
 if (user) {
   document.getElementById('userName').textContent = user.name;
   document.getElementById('userCollegeId').textContent = user.collegeId;
+}
+
+function goLiveTrack() {
+  window.location.href = 'live-track.html';
 }
 
 function goTrack() {

@@ -1,7 +1,9 @@
 // Configuration for Bus Tracking System
 const CONFIG = {
-  // API Configuration
-  API_BASE_URL: 'http://localhost:3000/api',
+  // API Configuration - Auto-detect environment
+  API_BASE_URL: window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api'
+    : window.location.origin + '/api',
   
   // Hardware Integration Settings
   HARDWARE: {
@@ -15,7 +17,7 @@ const CONFIG = {
   MAP: {
     DEFAULT_CENTER: { lat: 12.9716, lng: 77.5946 }, // Bangalore (change to your college location)
     DEFAULT_ZOOM: 13,
-    UPDATE_INTERVAL: 10000 // 10 seconds
+    UPDATE_INTERVAL: 5000 // 5 seconds (changed from 10 for better real-time feel)
   },
   
   // Validation Rules
