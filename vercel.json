@@ -4,10 +4,6 @@
     {
       "src": "api/index.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "tracking/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -16,28 +12,8 @@
       "dest": "/api/index.js"
     },
     {
-      "src": "/",
-      "dest": "/tracking/index.html"
-    },
-    {
-      "src": "/index.html",
-      "dest": "/tracking/index.html"
-    },
-    {
-      "src": "/(.*\\.html)",
-      "dest": "/tracking/$1"
-    },
-    {
-      "src": "/(.*\\.css)",
-      "dest": "/tracking/$1"
-    },
-    {
-      "src": "/(.*\\.js)",
-      "dest": "/tracking/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/tracking/$1"
+      "dest": "/public/$1"
     }
   ]
 }

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ticket Type - Bus Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="container">
+  <h2>Select Ticket Type</h2>
+  <button class="back-btn" onclick="goBack()">← Back</button>
+  
+  <p class="subtitle">Choose your ticket duration</p>
+
+  <div class="ticket-options">
+    <div class="ticket-card" onclick="selectTicket('Monthly')">
+      <span class="ticket-icon">📅</span>
+      <h3>Monthly Pass</h3>
+      <p>Valid for 30 days</p>
+      <p class="ticket-benefit">✓ Unlimited rides</p>
+      <p class="ticket-benefit">✓ Best value</p>
+    </div>
+
+    <div class="ticket-card" onclick="selectTicket('Daily')">
+      <span class="ticket-icon">🎫</span>
+      <h3>Daily / Weekend Pass</h3>
+      <p>Valid for single day</p>
+      <p class="ticket-benefit">✓ Flexible option</p>
+      <p class="ticket-benefit">✓ Pay per use</p>
+    </div>
+  </div>
+</div>
+
+<div id="popup" class="popup"></div>
+
+<script src="config.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/session.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+
+<script>
+// Check authentication
+SessionManager.requireAuth();
+
+function selectTicket(ticketType) {
+  localStorage.setItem('ticketType', ticketType);
+  UI.showSuccess(`${ticketType} ticket selected`);
+  
+  setTimeout(() => {
+    window.location.href = 'routes.html';
+  }, 500);
+}
+
+function goBack() {
+  window.location.href = 'dashboard.html';
+}
+</script>
+
+</body>
+</html>

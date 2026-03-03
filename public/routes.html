@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select Route - Bus Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="container">
+  <h2>Select Bus Route</h2>
+  <button class="back-btn" onclick="goBack()">← Back</button>
+  
+  <p class="subtitle">Choose your preferred route</p>
+
+  <div id="routesList"></div>
+</div>
+
+<div id="popup" class="popup"></div>
+
+<script src="config.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/session.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+
+<script>
+// Check authentication
+SessionManager.requireAuth();
+
+const routes = [
+  {
+    id: 'ROUTE_A',
+    name: 'Route A - Main Campus',
+    description: 'Via MG Road, Indiranagar',
+    stops: ['College Gate', 'MG Road', 'Indiranagar', 'Main Campus'],
+    price: 1200,
+    duration: '45 mins'
+  },
+  {
+    id: 'ROUTE_B',
+    name: 'Route B - North Campus',
+    description: 'Via Hebbal, Yelahanka',
+    stops: ['College Gate', 'Hebbal', 'Yelahanka', 'North Campus'],
+    price: 1500,
+    duration: '60 mins'
+  },
+  {
+    id: 'ROUTE_C',
+    name: 'Route C - South Campus',
+    description: 'Via Jayanagar, BTM',
+    stops: ['College Gate', 'Jayanagar', 'BTM Layout', 'South Campus'],
+    price: 1000,
+    duration: '40 mins'
+  }
+];
+
+function loadRoutes() {
+  const ticketType = localStorage.getItem('ticketType') || 'Monthly';
+  const routesList = document.getElementById('routesList');
+  
+  routesList.innerHTML = routes.map(route => `
+    <div class="route-card" onclick="selectRoute('${route.id}', '${route.name}', ${route.price})">
+      <h3>${route.name}</h3>
+      <p class="route-desc">${route.description}</p>
+      <div class="route-details">
+        <span>⏱️ ${route.duration}</span>
+        <span>🚏 ${route.stops.length} stops</span>
+      </div>
+      <div class="route-stops">
+        ${route.stops.map(stop => `<span class="stop-badge">${stop}</span>`).join('')}
+      </div>
+      <p class="route-price">₹${route.price} / ${ticketType}</p>
+    </div>
+  `).join('');
+}
+
+function selectRoute(routeId, routeName, amount) {
+  const ticketType = localStorage.getItem('ticketType');
+  
+  if (!ticketType) {
+    UI.showError('Please select ticket type first');
+    setTimeout(() => {
+      window.location.href = 'tickets.html';
+    }, 1500);
+    return;
+  }
+  
+  localStorage.setItem('selectedRoute', routeId);
+  localStorage.setItem('routeName', routeName);
+  localStorage.setItem('amount', amount);
+  
+  window.location.href = 'payment.html';
+}
+
+function goBack() {
+  window.location.href = 'tickets.html';
+}
+
+loadRoutes();
+</script>
+
+</body>
+</html>
