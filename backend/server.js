@@ -21,7 +21,9 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Connect to MongoDB
-connectDB();
+connectDB().catch(err => {
+  console.error('MongoDB connection failed:', err);
+});
 
 // Middleware
 app.use(cors());
@@ -443,6 +445,17 @@ app.get('/api/health', async (req, res) => {
       error: error.message
     });
   }
+});
+
+// Environment Check (for debugging)
+app.get('/api/env-check', (req, res) => {
+  res.json({
+    hasMongoUri: !!process.env.MONGODB_URI,
+    hasJwtSecret: !!process.env.JWT_SECRET,
+    nodeEnv: process.env.NODE_ENV || 'not set',
+    isVercel: !!process.env.VERCEL,
+    mongoUriLength: process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0
+  });
 });
 
 // Seed data on startup
