@@ -19,7 +19,7 @@ export default function RoutesPage() {
   return (
     <div className="page-shell" style={{ background: 'var(--bg)' }}>
       <TopNav />
-      <div style={{ background: 'linear-gradient(135deg,#F97316,#EA580C)', padding: '24px 20px 28px', color: '#fff' }}>
+      <div style={{ background: 'linear-gradient(135deg,#4F46E5,#3730A3)', padding: '24px 20px 28px', color: '#fff' }}>
         <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.85, marginBottom: 4 }}>Available Routes</div>
         <div style={{ fontSize: 24, fontWeight: 800 }}>Bus Routes</div>
         <div style={{ fontSize: 12, opacity: 0.75, marginTop: 4 }}>{routes.length} routes available</div>

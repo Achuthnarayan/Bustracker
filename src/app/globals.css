@@ -41,24 +41,20 @@ body {
   background: var(--surface);
 }
 
-/* ── Auth layout: centered form card ──────────────────────────────────── */
+/* ── Auth layout: full-width split layout ─────────────────────────────── */
 .auth-page {
   width: 100%;
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 16px;
-  background: var(--bg);
+  flex-direction: column;
+  background: var(--surface);
 }
 
 .auth-card {
   width: 100%;
-  max-width: 440px;
-  background: var(--surface);
-  border-radius: 20px;
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── Inputs ────────────────────────────────────────────────────────────── */
@@ -104,15 +100,19 @@ input:focus, select:focus {
 
 /* ── Auth header (inside card) ─────────────────────────────────────────── */
 .auth-header {
-  background: linear-gradient(150deg, #EEF2FF 0%, #C7D2FE 60%, #818CF8 100%);
-  padding: 40px 24px 36px;
+  background: linear-gradient(135deg, #4F46E5 0%, #3730A3 100%);
+  padding: 52px 24px 44px;
   text-align: center;
 }
-.auth-header h1 { font-size: 24px; font-weight: 800; color: #1E1B4B; }
-.auth-header p  { font-size: 14px; color: #3730A3; margin-top: 4px; font-weight: 500; }
+.auth-header h1 { font-size: 26px; font-weight: 800; color: #fff; }
+.auth-header p  { font-size: 14px; color: rgba(255,255,255,0.75); margin-top: 4px; font-weight: 500; }
 
 .auth-body {
-  padding: 28px 28px 32px;
+  flex: 1;
+  padding: 32px 24px 40px;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
 }
 .auth-body h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
 .subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }

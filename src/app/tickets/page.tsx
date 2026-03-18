@@ -65,7 +65,7 @@ export default function TicketsPage() {
   return (
     <div className="page-shell" style={{ background: 'var(--bg)' }}>
       <TopNav />
-      <div style={{ background: 'linear-gradient(135deg,#F97316,#EA580C)', padding: '24px 20px 28px', color: '#fff' }}>
+      <div style={{ background: 'linear-gradient(135deg,#4F46E5,#3730A3)', padding: '24px 20px 28px', color: '#fff' }}>
         <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.85, marginBottom: 4 }}>My Tickets</div>
         <div style={{ fontSize: 24, fontWeight: 800 }}>Ticket Wallet</div>
         <div style={{ fontSize: 12, opacity: 0.75, marginTop: 4 }}>{active.length} active · {past.length} past</div>
@@ -109,14 +109,6 @@ export default function TicketsPage() {
               <select value={form.ticketType} onChange={e => setForm(f => ({ ...f, ticketType: e.target.value }))}>
                 <option>Single</option>
                 <option>Monthly</option>
-              </select>
-            </div>
-            <div className="input-group">
-              <label>Payment Method</label>
-              <select value={form.paymentMethod} onChange={e => setForm(f => ({ ...f, paymentMethod: e.target.value }))}>
-                <option>Card</option>
-                <option>M-Pesa</option>
-                <option>Cash</option>
               </select>
             </div>
             {selectedRoute && (
