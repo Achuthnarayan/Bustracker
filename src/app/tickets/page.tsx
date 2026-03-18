@@ -1,23 +1,19 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import TopNav from '@/components/TopNav';
-import Toast from '@/components/Toast';
 import { useAuth, getToken } from '@/hooks/useAuth';
 
 export default function TicketsPage() {
   useAuth();
+  const router = useRouter();
   const [tickets, setTickets] = useState<any[]>([]);
   const [routes, setRoutes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ route: '', from: '', to: '', ticketType: 'Single', paymentMethod: 'Card' });
-  const [booking, setBooking] = useState(false);
+  const [form, setForm] = useState({ route: '', from: '', to: '', ticketType: 'Single' });
 
-  useEffect(() => {
-    loadAll();
-  }, []);
+  useEffect(() => { loadAll(); }, []);
 
   async function loadAll() {
     const token = getToken();
@@ -32,31 +28,11 @@ export default function TicketsPage() {
 
   const selectedRoute = routes.find(r => r.routeId === form.route);
 
-  async function handleBook(e: React.FormEvent) {
+  function goToPayment(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedRoute) return;
-    setBooking(true);
-    try {
-      const res = await fetch('/api/tickets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({
-          ...form,
-          routeName: selectedRoute.name,
-          amount: selectedRoute.price,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      setToast({ msg: 'Ticket booked!', type: 'success' });
-      setShowForm(false);
-      setForm({ route: '', from: '', to: '', ticketType: 'Single', paymentMethod: 'Card' });
-      loadAll();
-    } catch (err: any) {
-      setToast({ msg: err.message || 'Booking failed', type: 'error' });
-    } finally {
-      setBooking(false);
-    }
+    if (!form.route || !form.from || !form.to) return;
+    const params = new URLSearchParams({ route: form.route, from: form.from, to: form.to, ticketType: form.ticketType });
+    router.push(`/payment?${params.toString()}`);
   }
 
   const active = tickets.filter(t => ['active', 'Active'].includes(t.status));
@@ -72,18 +48,18 @@ export default function TicketsPage() {
       </div>
 
       <div style={{ padding: '20px 16px 40px' }}>
-        <button className="btn btn-primary" style={{ width: '100%', marginBottom: 20 }} onClick={() => setShowForm(v => !v)}>
+        <button className="btn btn-primary" style={{ marginBottom: 20 }} onClick={() => setShowForm(v => !v)}>
           {showForm ? 'Cancel' : '+ Book New Ticket'}
         </button>
 
         {showForm && (
-          <form onSubmit={handleBook} style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, padding: 18, marginBottom: 20 }}>
-            <p style={{ fontWeight: 800, fontSize: 15, marginBottom: 14 }}>Book a Ticket</p>
+          <form onSubmit={goToPayment} style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, padding: 18, marginBottom: 20 }}>
+            <p style={{ fontWeight: 800, fontSize: 15, marginBottom: 14 }}>Select Trip</p>
             <div className="input-group">
               <label>Route</label>
-              <select value={form.route} onChange={e => setForm(f => ({ ...f, route: e.target.value }))} required>
+              <select value={form.route} onChange={e => setForm(f => ({ ...f, route: e.target.value, from: '', to: '' }))} required>
                 <option value="">Select route</option>
-                {routes.map(r => <option key={r.routeId} value={r.routeId}>{r.name} — KES {r.price}</option>)}
+                {routes.map(r => <option key={r.routeId} value={r.routeId}>{r.name} — ₹{r.price}</option>)}
               </select>
             </div>
             {selectedRoute && (
@@ -112,12 +88,12 @@ export default function TicketsPage() {
               </select>
             </div>
             {selectedRoute && (
-              <div style={{ background: 'var(--orange-bg)', borderRadius: 10, padding: '10px 14px', marginBottom: 14, fontSize: 13 }}>
-                Total: <strong>KES {selectedRoute.price}</strong>
+              <div style={{ background: 'var(--accent-light)', borderRadius: 10, padding: '10px 14px', marginBottom: 14, fontSize: 13 }}>
+                Total: <strong>₹{selectedRoute.price}</strong>
               </div>
             )}
-            <button type="submit" className="btn btn-primary" disabled={booking}>
-              {booking ? 'Booking...' : 'Confirm Booking'}
+            <button type="submit" className="btn btn-primary" disabled={!form.route || !form.from || !form.to}>
+              Continue to Payment →
             </button>
           </form>
         )}
@@ -144,8 +120,6 @@ export default function TicketsPage() {
           </>
         )}
       </div>
-
-      {toast && <Toast message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
     </div>
   );
 }
@@ -158,10 +132,10 @@ function TicketCard({ ticket, active }: { ticket: any; active: boolean }) {
     <div style={{
       background: active ? 'linear-gradient(135deg,#1A1A2E,#16213E)' : '#fff',
       border: `1.5px solid ${active ? 'transparent' : 'var(--border)'}`,
-      borderRadius: 16, padding: 18, marginBottom: 12, color: active ? '#fff' : 'var(--text)',
-      position: 'relative', overflow: 'hidden',
+      borderRadius: 16, padding: 18, marginBottom: 12,
+      color: active ? '#fff' : 'var(--text)', position: 'relative', overflow: 'hidden',
     }}>
-      {active && <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, background: 'rgba(249,115,22,0.15)', borderRadius: '50%' }} />}
+      {active && <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, background: 'rgba(79,70,229,0.15)', borderRadius: '50%' }} />}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div>
           <div style={{ fontSize: 15, fontWeight: 800 }}>{ticket.routeName || ticket.route}</div>
@@ -171,7 +145,7 @@ function TicketCard({ ticket, active }: { ticket: any; active: boolean }) {
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
         <div style={{ fontSize: 11, opacity: 0.6 }}>{date}</div>
-        <div style={{ fontSize: 16, fontWeight: 800, color: active ? '#F97316' : 'var(--orange)' }}>KES {ticket.amount}</div>
+        <div style={{ fontSize: 16, fontWeight: 800, color: active ? 'var(--accent-muted)' : 'var(--accent)' }}>₹{ticket.amount}</div>
       </div>
     </div>
   );
