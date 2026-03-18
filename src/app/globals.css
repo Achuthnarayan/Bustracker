@@ -1,0 +1,121 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --orange: #F97316;
+  --orange-light: #FED7AA;
+  --orange-dark: #EA580C;
+  --orange-bg: #FFF7ED;
+  --bg: #F8FAFC;
+  --white: #FFFFFF;
+  --text: #1A1A2E;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --green: #22C55E;
+  --red: #EF4444;
+  --radius: 14px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.07);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #EFF3F8;
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* Page shell — centered card on desktop, full-width on mobile */
+.page-shell {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 520px) {
+  body { display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px; }
+  .page-shell { min-height: auto; border-radius: 24px; box-shadow: var(--shadow-lg); overflow: hidden; }
+}
+
+/* Inputs */
+input, select {
+  width: 100%; padding: 13px 14px;
+  border: 2px solid var(--border); border-radius: 12px;
+  font-size: 15px; background: var(--bg); color: var(--text);
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+input:focus, select:focus {
+  border-color: var(--orange); background: var(--white);
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.12);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px 20px; border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; font-family: inherit; text-decoration: none;
+}
+.btn-primary { background: var(--orange); color: white; box-shadow: 0 4px 14px rgba(249,115,22,0.3); }
+.btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); }
+.btn-secondary { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+.btn-full { width: 100%; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+
+/* Status badges */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-green  { background: #DCFCE7; color: #166534; }
+.badge-red    { background: #FEE2E2; color: #991B1B; }
+.badge-yellow { background: #FEF3C7; color: #92400E; }
+
+/* Section label */
+.sec-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* Auth pages */
+.auth-header {
+  background: linear-gradient(150deg, #FED7AA 0%, #FB923C 60%, #F97316 100%);
+  padding: clamp(40px,8vw,64px) 24px clamp(32px,6vw,48px);
+  text-align: center;
+}
+.auth-header h1 { font-size: clamp(20px,5vw,26px); font-weight: 800; color: #7C2D12; }
+.auth-header p  { font-size: 14px; color: #9A3412; margin-top: 4px; font-weight: 500; }
+.auth-body {
+  flex: 1; padding: clamp(20px,5vw,32px) clamp(16px,5vw,28px);
+  background: var(--white); border-radius: 24px 24px 0 0;
+  margin-top: -18px; position: relative; z-index: 2;
+}
+.auth-body h2 { font-size: clamp(18px,4vw,22px); font-weight: 800; margin-bottom: 4px; }
+.subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+.input-group { margin-bottom: 14px; }
+.input-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+.error-msg { color: var(--red); font-size: 11px; margin-top: 4px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--text); color: white; padding: 12px 22px;
+  border-radius: 12px; font-size: 14px; font-weight: 600;
+  z-index: 9999; box-shadow: var(--shadow-lg); white-space: nowrap;
+  animation: toastIn 0.3s ease forwards;
+}
+.toast-error { background: var(--red); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Spinner */
+.spinner {
+  display: inline-block; width: 18px; height: 18px;
+  border: 3px solid rgba(255,255,255,0.35); border-top-color: white;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
