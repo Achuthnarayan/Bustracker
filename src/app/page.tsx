@@ -69,10 +69,10 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section style={s.hero}>
-        <div style={s.badge}>🎓 SCMS School of Engineering and Technology</div>
+        <div style={s.badge}>🎓 SSET – Karukutty</div>
         <h1 style={s.h1}>Track Your Bus<br />In Real Time</h1>
         <p style={s.heroP}>
-          Never miss your SCMS Karukutty bus again. Live GPS updates, ML-powered arrival estimates,
+          Never miss your SSET Karukutty bus again. Live GPS updates, ML-powered arrival estimates,
           and digital tickets — all in one place.
         </p>
         <div style={s.heroBtns}>
@@ -105,7 +105,7 @@ export default function LandingPage() {
       {/* Stats */}
       <section style={s.stats}>
         <div style={s.statsRow}>
-          {[['2', 'Bus Routes'], ['Live', 'GPS Updates'], ['24/7', 'Availability']].map(([val, lbl]) => (
+          {[['7', 'Bus Routes'], ['Live', 'GPS Updates'], ['24/7', 'Availability']].map(([val, lbl]) => (
             <div key={lbl} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 44, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{val}</div>
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: 500 }}>{lbl}</div>
@@ -120,7 +120,7 @@ export default function LandingPage() {
           <div style={{ fontSize: 40, marginBottom: 16 }}>🚌</div>
           <h2 style={{ fontSize: 26, fontWeight: 800, color: '#0F172A', marginBottom: 10 }}>Ready to get started?</h2>
           <p style={{ color: '#64748B', fontSize: 15, marginBottom: 30, lineHeight: 1.6 }}>
-            Create your free account and start tracking your college bus today.
+            Create your free account and start tracking your SSET college bus today.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/signup" style={{

@@ -7,8 +7,13 @@ import Toast from '@/components/Toast';
 type TripState = 'idle' | 'active' | 'ended';
 
 const ROUTE_NAMES: Record<string, string> = {
-  ROUTE_A: 'Route A – Kaloor → SCMS Karukutty',
-  ROUTE_B: 'Route B – Thrissur → SCMS Karukutty',
+  ROUTE_1: 'Route 1 – Angamaly → SSET',
+  ROUTE_2: 'Route 2 – Chalakudy → SSET',
+  ROUTE_3: 'Route 3 – Aluva → SSET',
+  ROUTE_4: 'Route 4 – Perumbavoor → SSET',
+  ROUTE_5: 'Route 5 – Kalady → SSET',
+  ROUTE_6: 'Route 6 – North Paravur → SSET',
+  ROUTE_7: 'Route 7 – Thrissur → SSET',
 };
 
 export default function OperatorDashboard() {

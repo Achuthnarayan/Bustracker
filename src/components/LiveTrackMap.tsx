@@ -5,8 +5,13 @@ import { getToken } from '@/hooks/useAuth';
 import 'leaflet/dist/leaflet.css';
 
 const ROUTE_COLORS: Record<string, string> = {
-  ROUTE_A: '#4F46E5',
-  ROUTE_B: '#0EA5E9',
+  ROUTE_1: '#4F46E5', // indigo  – Angamaly
+  ROUTE_2: '#0EA5E9', // sky     – Chalakudy
+  ROUTE_3: '#10B981', // green   – Aluva
+  ROUTE_4: '#8B5CF6', // purple  – Perumbavoor
+  ROUTE_5: '#F59E0B', // amber   – Kalady
+  ROUTE_6: '#EF4444', // red     – North Paravur
+  ROUTE_7: '#64748B', // slate   – Thrissur
 };
 const DEFAULT_COLOR = '#64748B';
 
