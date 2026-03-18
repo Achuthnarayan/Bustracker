@@ -31,6 +31,7 @@ function PaymentForm() {
     from:       searchParams.get('from')       || '',
     to:         searchParams.get('to')         || '',
     ticketType: searchParams.get('ticketType') || 'Single',
+    amount:     Number(searchParams.get('amount') || 0),
   });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
@@ -57,7 +58,7 @@ function PaymentForm() {
       const orderRes = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body: JSON.stringify({ amount: selectedRoute.price, receipt: `bus_${Date.now()}` }),
+        body: JSON.stringify({ amount: form.amount || selectedRoute?.price, receipt: `bus_${Date.now()}` }),
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.message || 'Failed to create order');
@@ -65,7 +66,7 @@ function PaymentForm() {
       const userRaw = localStorage.getItem('bus_tracker_user');
       const user = userRaw ? JSON.parse(userRaw) : {};
       const cf = { ...form };
-      const cr = { name: selectedRoute.name, price: selectedRoute.price };
+      const cr = { name: selectedRoute?.name || '', price: form.amount || selectedRoute?.price || 0 };
 
       const options = {
         key: RZP_KEY,
@@ -208,7 +209,7 @@ function PaymentForm() {
               </div>
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10, display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 800 }}>
                 <span>Total</span>
-                <span style={{ color: 'var(--accent)' }}>₹{selectedRoute.price}</span>
+                <span style={{ color: 'var(--accent)' }}>₹{form.amount || selectedRoute?.price}</span>
               </div>
             </div>
           )}
@@ -222,7 +223,7 @@ function PaymentForm() {
           </div>
 
           <button className="btn btn-primary" disabled={loading || !form.route || !form.from || !form.to} onClick={handlePay} style={{ fontSize: 15, padding: '14px' }}>
-            {loading ? <><span className="spinner" /> Opening Razorpay...</> : `Pay ₹${selectedRoute?.price || '—'} via Razorpay`}
+            {loading ? <><span className="spinner" /> Opening Razorpay...</> : `Pay ₹${form.amount || selectedRoute?.price || '—'} via Razorpay`}
           </button>
         </div>
       </div>

@@ -91,8 +91,8 @@ export default function DashboardPage() {
           {[
             { href: '/live-track', icon: '🗺️', label: 'Live Track', primary: true },
             { href: '/routes',     icon: '🚌', label: 'Routes' },
-            { href: '/tickets',    icon: '🎫', label: 'Tickets' },
-            { href: '/payment',    icon: '💳', label: 'Pay' },
+            { href: '/tickets',    icon: '🎫', label: 'Book Ticket' },
+            { href: '/dashboard',  icon: '📋', label: 'My Trips' },
           ].map(item => (
             <Link key={item.href} href={item.href} style={{
               background: '#fff', borderRadius: 14, padding: '14px 8px', textAlign: 'center',

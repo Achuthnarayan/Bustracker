@@ -41,32 +41,61 @@ export default function RoutesPage() {
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>{route.description}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--orange)' }}>KES {route.price}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent)' }}>₹{route.price}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{route.duration}</div>
               </div>
             </div>
 
             {/* Stops */}
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-              {(route.stops || []).map((stop: any, i: number) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: i < route.stops.length - 1 ? 8 : 0 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
-                    <div style={{
-                      width: 10, height: 10, borderRadius: '50%',
-                      background: i === 0 || i === route.stops.length - 1 ? 'var(--orange)' : '#CBD5E1',
-                      border: '2px solid #fff', boxShadow: '0 0 0 2px var(--orange)',
-                      flexShrink: 0,
-                    }} />
-                    {i < route.stops.length - 1 && <div style={{ width: 2, height: 16, background: '#E2E8F0' }} />}
+              {(route.stops || []).map((stop: any, i: number) => {
+                // Compute scheduled arrival from startTime
+                const [sh, sm] = (route.startTime || '08:05').split(':').map(Number);
+                const arrMins = sh * 60 + sm + stop.expectedTime;
+                const arrH = Math.floor(arrMins / 60) % 24;
+                const arrM = arrMins % 60;
+                const arrStr = `${String(arrH).padStart(2,'0')}:${String(arrM).padStart(2,'0')}`;
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: i < route.stops.length - 1 ? 8 : 0 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                      <div style={{
+                        width: 10, height: 10, borderRadius: '50%',
+                        background: i === 0 || i === route.stops.length - 1 ? 'var(--accent)' : '#CBD5E1',
+                        border: '2px solid #fff', boxShadow: '0 0 0 2px var(--accent)',
+                        flexShrink: 0,
+                      }} />
+                      {i < route.stops.length - 1 && <div style={{ width: 2, height: 16, background: '#E2E8F0' }} />}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>{stop.name}</span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>{arrStr}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                        {stop.expectedTime === 0 ? 'Departure' : `+${stop.expectedTime} min`}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>{stop.name}</span>
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                    {stop.expectedTime === 0 ? 'Start' : `+${stop.expectedTime} min`}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
+            </div>
+
+            {/* Morning / Evening schedule */}
+            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1, background: '#EFF6FF', borderRadius: 10, padding: '8px 12px', fontSize: 12 }}>
+                <div style={{ fontWeight: 700, color: '#1e40af', marginBottom: 2 }}>🌅 Morning</div>
+                <div style={{ color: '#1e3a8a' }}>Departs <strong>{route.startTime}</strong></div>
+                <div style={{ color: '#1e3a8a' }}>Arrives SSET <strong>08:40</strong></div>
+              </div>
+              <div style={{ flex: 1, background: '#F0FDF4', borderRadius: 10, padding: '8px 12px', fontSize: 12 }}>
+                <div style={{ fontWeight: 700, color: '#065F46', marginBottom: 2 }}>🌆 Evening</div>
+                <div style={{ color: '#065F46' }}>Departs SSET <strong>16:00</strong></div>
+                <div style={{ color: '#065F46' }}>Arrives <strong>~{(() => {
+                  const [sh, sm] = (route.startTime || '08:05').split(':').map(Number);
+                  const totalMins = 16 * 60 + route.totalDuration;
+                  return `${String(Math.floor(totalMins / 60) % 24).padStart(2,'0')}:${String(totalMins % 60).padStart(2,'0')}`;
+                })()}</strong></div>
+              </div>
             </div>
 
             <div style={{ marginTop: 14 }}>

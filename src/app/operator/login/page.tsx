@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '@/components/Toast';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function OperatorLoginPage() {
   const router = useRouter();
@@ -46,7 +47,7 @@ export default function OperatorLoginPage() {
             </div>
             <div className="input-group">
               <label>Password</label>
-              <input type="password" placeholder="••••••••" value={form.password}
+              <PasswordInput value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required />
             </div>
             <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: 8 }}>
