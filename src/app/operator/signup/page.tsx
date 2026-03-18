@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '@/components/Toast';
+import PasswordInput from '@/components/PasswordInput';
 
 const ROUTES = [
   { id: 'ROUTE_1', label: 'Route 1 – Angamaly → SSET',      bus: 'KL07-BUS01' },
@@ -117,8 +118,8 @@ export default function OperatorSignupPage() {
 
             <div className="input-group">
               <label>Password</label>
-              <input
-                type="password" placeholder="Min 6 characters" value={form.password} required minLength={6}
+              <PasswordInput
+                placeholder="Min 6 characters" value={form.password} required minLength={6}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
               />
             </div>

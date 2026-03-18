@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '@/components/Toast';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -43,17 +44,20 @@ export default function SignupPage() {
           <p className="subtitle">Create your student account</p>
           <form onSubmit={handleSubmit}>
             {[
-              { label: 'Full Name',  key: 'name',      type: 'text',     placeholder: 'Your name' },
-              { label: 'College ID', key: 'collegeId', type: 'text',     placeholder: 'e.g. IIIT001' },
-              { label: 'Phone',      key: 'phone',     type: 'tel',      placeholder: '10-digit number' },
-              { label: 'Email',      key: 'email',     type: 'email',    placeholder: 'you@college.edu' },
-              { label: 'Password',   key: 'password',  type: 'password', placeholder: 'Min 6 characters' },
+              { label: 'Full Name',  key: 'name',      type: 'text',  placeholder: 'Your name' },
+              { label: 'College ID', key: 'collegeId', type: 'text',  placeholder: 'e.g. IIIT001' },
+              { label: 'Phone',      key: 'phone',     type: 'tel',   placeholder: '10-digit number' },
+              { label: 'Email',      key: 'email',     type: 'email', placeholder: 'you@college.edu' },
             ].map(f => (
               <div className="input-group" key={f.key}>
                 <label>{f.label}</label>
                 <input type={f.type} placeholder={f.placeholder} value={(form as any)[f.key]} onChange={set(f.key)} required />
               </div>
             ))}
+            <div className="input-group">
+              <label>Password</label>
+              <PasswordInput placeholder="Min 6 characters" value={form.password} onChange={set('password')} required minLength={6} />
+            </div>
             <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: 8 }}>
               {loading ? <><span className="spinner" /> Creating account...</> : 'Create Account'}
             </button>
