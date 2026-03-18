@@ -14,7 +14,9 @@ export default function OperatorSignupPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setLoading(true);
     try {
-      const res = await fetch('/api/auth/operator/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+      const res = await fetch('/api/auth/operator/register', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       const expiry = new Date(); expiry.setHours(expiry.getHours() + 24);
@@ -27,30 +29,38 @@ export default function OperatorSignupPage() {
   }
 
   return (
-    <div className="page-shell">
-      <div className="auth-header"><div style={{ fontSize: 52, marginBottom: 10 }}>🚍</div><h1>Register Operator</h1><p>Create your driver account</p></div>
-      <div className="auth-body">
-        <h2>Sign up</h2><p className="subtitle">Register as a bus operator</p>
-        <form onSubmit={handleSubmit}>
-          {[
-            { label: 'Full Name', key: 'name', placeholder: 'Driver name' },
-            { label: 'Operator ID', key: 'operatorId', placeholder: 'e.g. OP001' },
-            { label: 'Bus Number', key: 'busNumber', placeholder: 'e.g. BUS01' },
-            { label: 'Route ID', key: 'route', placeholder: 'e.g. ROUTE_A' },
-            { label: 'Password', key: 'password', placeholder: 'Min 6 characters', type: 'password' },
-          ].map(f => (
-            <div className="input-group" key={f.key}>
-              <label>{f.label}</label>
-              <input type={f.type || 'text'} placeholder={f.placeholder} value={(form as any)[f.key]} onChange={set(f.key)} required />
-            </div>
-          ))}
-          <button type="submit" className="btn btn-primary btn-full" disabled={loading} style={{ marginTop: 8 }}>
-            {loading ? <><span className="spinner" /> Registering...</> : 'Register'}
-          </button>
-        </form>
-        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: 'var(--text-muted)' }}>
-          Already registered? <Link href="/operator/login" style={{ color: 'var(--orange)', fontWeight: 700, textDecoration: 'none' }}>Sign in</Link>
-        </p>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-header">
+          <div style={{ fontSize: 48, marginBottom: 10 }}>🚍</div>
+          <h1>Register Operator</h1>
+          <p>Create your driver account</p>
+        </div>
+        <div className="auth-body">
+          <h2>Sign up</h2>
+          <p className="subtitle">Register as a bus operator</p>
+          <form onSubmit={handleSubmit}>
+            {[
+              { label: 'Full Name',   key: 'name',       placeholder: 'Driver name',       type: 'text' },
+              { label: 'Operator ID', key: 'operatorId', placeholder: 'e.g. OP001',        type: 'text' },
+              { label: 'Bus Number',  key: 'busNumber',  placeholder: 'e.g. BUS01',        type: 'text' },
+              { label: 'Route ID',    key: 'route',      placeholder: 'e.g. ROUTE_A',      type: 'text' },
+              { label: 'Password',    key: 'password',   placeholder: 'Min 6 characters',  type: 'password' },
+            ].map(f => (
+              <div className="input-group" key={f.key}>
+                <label>{f.label}</label>
+                <input type={f.type} placeholder={f.placeholder} value={(form as any)[f.key]} onChange={set(f.key)} required />
+              </div>
+            ))}
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: 8 }}>
+              {loading ? <><span className="spinner" /> Registering...</> : 'Register'}
+            </button>
+          </form>
+          <p style={{ textAlign: 'center', marginTop: 18, fontSize: 14, color: 'var(--text-muted)' }}>
+            Already registered?{' '}
+            <Link href="/operator/login" style={{ color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>Sign in</Link>
+          </p>
+        </div>
       </div>
       {toast && <Toast message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
     </div>
