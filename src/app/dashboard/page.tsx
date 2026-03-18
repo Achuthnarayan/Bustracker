@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
       {/* Hero */}
       <div style={{
-        background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
+        background: 'linear-gradient(135deg, #4F46E5 0%, #3730A3 100%)',
         padding: '24px 20px 32px', color: '#fff', position: 'relative', overflow: 'hidden',
       }}>
         <div style={{ position: 'absolute', right: -10, bottom: -10, fontSize: 90, opacity: 0.12, transform: 'rotate(-15deg)' }}>🚌</div>
@@ -102,7 +102,7 @@ export default function DashboardPage() {
             }}>
               <div style={{
                 fontSize: 22, width: 44, height: 44, borderRadius: 12,
-                background: item.primary ? 'var(--orange)' : 'var(--orange-bg)',
+                background: item.primary ? 'var(--accent)' : 'var(--accent-light)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>{item.icon}</div>
               <span style={{ fontSize: 11, fontWeight: 700 }}>{item.label}</span>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
                 <div style={{ fontSize: 10, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Fare</div>
                 <div style={{ fontSize: 14, fontWeight: 700 }}>KES {activeTicket.amount || '—'}</div>
               </div>
-              <Link href="/live-track" className="btn btn-primary" style={{ padding: '9px 16px', fontSize: 12, marginBottom: 0 }}>
+              <Link href="/live-track" className="btn btn-primary" style={{ padding: '9px 16px', fontSize: 12, marginBottom: 0, width: 'auto' }}>
                 Track Bus →
               </Link>
             </div>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{date}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--orange)' }}>KES {t.amount || '—'}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent)' }}>₹{t.amount || '—'}</div>
                 <span className={`badge ${done ? 'badge-green' : 'badge-red'}`} style={{ marginTop: 4 }}>{done ? 'Completed' : t.status}</span>
               </div>
             </div>

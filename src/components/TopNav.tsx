@@ -34,7 +34,7 @@ export default function TopNav() {
       padding: '0 20px', height: 58,
       boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
     }}>
-      <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 18, fontWeight: 800, color: 'var(--orange)', textDecoration: 'none' }}>
+      <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 18, fontWeight: 800, color: 'var(--accent)', textDecoration: 'none' }}>
         <span style={{ fontSize: 22 }}>🚌</span> BusTracker
       </Link>
 
@@ -44,10 +44,10 @@ export default function TopNav() {
           onClick={() => setOpen(o => !o)}
           style={{
             width: 36, height: 36, borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--orange), var(--orange-dark))',
+            background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
             color: '#fff', fontWeight: 800, fontSize: 15,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', border: '2px solid var(--orange-light)',
+            cursor: 'pointer', border: '2px solid var(--accent-light)',
           }}
         >
           {user?.name?.charAt(0).toUpperCase() || 'S'}
