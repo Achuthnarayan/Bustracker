@@ -69,10 +69,10 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section style={s.hero}>
-        <div style={s.badge}>🎓 College Bus Tracking System</div>
+        <div style={s.badge}>🎓 SCMS School of Engineering and Technology</div>
         <h1 style={s.h1}>Track Your Bus<br />In Real Time</h1>
         <p style={s.heroP}>
-          Never miss your college bus again. Live GPS updates, ML-powered arrival estimates,
+          Never miss your SCMS Karukutty bus again. Live GPS updates, ML-powered arrival estimates,
           and digital tickets — all in one place.
         </p>
         <div style={s.heroBtns}>
@@ -105,7 +105,7 @@ export default function LandingPage() {
       {/* Stats */}
       <section style={s.stats}>
         <div style={s.statsRow}>
-          {[['3+', 'Bus Routes'], ['Live', 'GPS Updates'], ['24/7', 'Availability']].map(([val, lbl]) => (
+          {[['2', 'Bus Routes'], ['Live', 'GPS Updates'], ['24/7', 'Availability']].map(([val, lbl]) => (
             <div key={lbl} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 44, fontWeight: 800, color: '#fff', marginBottom: 6 }}>{val}</div>
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: 500 }}>{lbl}</div>

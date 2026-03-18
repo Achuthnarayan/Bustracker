@@ -5,41 +5,71 @@ import { Route, Operator, Bus } from '@/models';
 
 export async function POST() {
   await connectDB();
-  if (!(await Route.countDocuments())) {
-    await Route.insertMany([
-      { routeId: 'ROUTE_A', name: 'Route A - Main Campus', description: 'Via MG Road, Indiranagar',
-        stops: [
-          { name: 'College Gate', order: 1, expectedTime: 0,  latitude: 12.9716, longitude: 77.5946 },
-          { name: 'MG Road',      order: 2, expectedTime: 15, latitude: 12.9758, longitude: 77.5995 },
-          { name: 'Indiranagar',  order: 3, expectedTime: 30, latitude: 12.9784, longitude: 77.6408 },
-          { name: 'Main Campus',  order: 4, expectedTime: 45, latitude: 12.9900, longitude: 77.6500 },
-        ], price: 1200, duration: '45 mins', totalDuration: 45, startTime: '08:00' },
-      { routeId: 'ROUTE_B', name: 'Route B - North Campus', description: 'Via Hebbal, Yelahanka',
-        stops: [
-          { name: 'College Gate', order: 1, expectedTime: 0,  latitude: 12.9716, longitude: 77.5946 },
-          { name: 'Hebbal',       order: 2, expectedTime: 20, latitude: 13.0359, longitude: 77.5970 },
-          { name: 'Yelahanka',    order: 3, expectedTime: 40, latitude: 13.1007, longitude: 77.5963 },
-          { name: 'North Campus', order: 4, expectedTime: 60, latitude: 13.1200, longitude: 77.6100 },
-        ], price: 1500, duration: '60 mins', totalDuration: 60, startTime: '08:30' },
-      { routeId: 'ROUTE_C', name: 'Route C - South Campus', description: 'Via Jayanagar, BTM Layout',
-        stops: [
-          { name: 'College Gate', order: 1, expectedTime: 0,  latitude: 12.9716, longitude: 77.5946 },
-          { name: 'Jayanagar',    order: 2, expectedTime: 15, latitude: 12.9308, longitude: 77.5838 },
-          { name: 'BTM Layout',   order: 3, expectedTime: 30, latitude: 12.9166, longitude: 77.6101 },
-          { name: 'South Campus', order: 4, expectedTime: 50, latitude: 12.9000, longitude: 77.6200 },
-        ], price: 1300, duration: '50 mins', totalDuration: 50, startTime: '09:00' },
-    ]);
-  }
+
+  // Clear existing routes so we can re-seed with correct data
+  await Route.deleteMany({});
+
+  await Route.insertMany([
+    {
+      routeId: 'ROUTE_A',
+      name: 'Route A – Kaloor → SCMS Karukutty',
+      description: 'Kaloor · Palarivattom · Edapally · Kalamassery · Aluva · Angamaly · SCMS',
+      startTime: '07:00',
+      price: 1200,
+      duration: '90 mins',
+      totalDuration: 90,
+      active: true,
+      stops: [
+        { name: 'Kaloor',                    order: 1,  expectedTime: 0,  latitude: 9.9816,  longitude: 76.2999 },
+        { name: 'Palarivattom',              order: 2,  expectedTime: 10, latitude: 9.9897,  longitude: 76.3063 },
+        { name: 'Edapally',                  order: 3,  expectedTime: 20, latitude: 10.0269, longitude: 76.3090 },
+        { name: 'Kalamassery',               order: 4,  expectedTime: 35, latitude: 10.0543, longitude: 76.3213 },
+        { name: 'Aluva',                     order: 5,  expectedTime: 50, latitude: 10.1004, longitude: 76.3570 },
+        { name: 'Angamaly',                  order: 6,  expectedTime: 65, latitude: 10.1960, longitude: 76.3860 },
+        { name: 'SCMS School of Engineering',order: 7,  expectedTime: 90, latitude: 10.2167, longitude: 76.4167 },
+      ],
+    },
+    {
+      routeId: 'ROUTE_B',
+      name: 'Route B – Thrissur → SCMS Karukutty',
+      description: 'Thrissur · Pudukkad · Kodakara · Perambra · Chalakudy · Koratty · SCMS',
+      startTime: '07:00',
+      price: 1500,
+      duration: '120 mins',
+      totalDuration: 120,
+      active: true,
+      stops: [
+        { name: 'Thrissur',                  order: 1,  expectedTime: 0,   latitude: 10.5276, longitude: 76.2144 },
+        { name: 'Pudukkad',                  order: 2,  expectedTime: 20,  latitude: 10.4167, longitude: 76.2833 },
+        { name: 'Kodakara',                  order: 3,  expectedTime: 40,  latitude: 10.3667, longitude: 76.3167 },
+        { name: 'Perambra',                  order: 4,  expectedTime: 60,  latitude: 10.3167, longitude: 76.3500 },
+        { name: 'Chalakudy',                 order: 5,  expectedTime: 75,  latitude: 10.3000, longitude: 76.3333 },
+        { name: 'Koratty',                   order: 6,  expectedTime: 95,  latitude: 10.2667, longitude: 76.3833 },
+        { name: 'SCMS School of Engineering',order: 7,  expectedTime: 120, latitude: 10.2167, longitude: 76.4167 },
+      ],
+    },
+  ]);
+
   const ops = [
-    { operatorId: 'OP001', name: 'Driver Rajan',  password: 'driver123', busNumber: 'BUS01', route: 'ROUTE_A' },
-    { operatorId: 'OP002', name: 'Driver Suresh', password: 'driver123', busNumber: 'BUS02', route: 'ROUTE_B' },
-    { operatorId: 'OP003', name: 'Driver Mohan',  password: 'driver123', busNumber: 'BUS03', route: 'ROUTE_C' },
+    { operatorId: 'OP001', name: 'Driver Rajan',  password: 'driver123', busNumber: 'KL07-BUS01', route: 'ROUTE_A' },
+    { operatorId: 'OP002', name: 'Driver Suresh', password: 'driver123', busNumber: 'KL07-BUS02', route: 'ROUTE_B' },
   ];
+
   for (const op of ops) {
     if (!(await Operator.findOne({ operatorId: op.operatorId })))
       await Operator.create({ ...op, password: await bcrypt.hash(op.password, 10) });
+    else
+      await Operator.updateOne({ operatorId: op.operatorId }, { busNumber: op.busNumber, route: op.route });
+
     if (!(await Bus.findOne({ busNumber: op.busNumber })))
       await Bus.create({ busNumber: op.busNumber, route: op.route });
+    else
+      await Bus.updateOne({ busNumber: op.busNumber }, { route: op.route });
   }
-  return NextResponse.json({ message: 'Seeded', operators: ops.map(o => ({ operatorId: o.operatorId, password: o.password })) });
+
+  return NextResponse.json({
+    message: 'Seeded SCMS Karukutty routes',
+    routes: ['ROUTE_A – Kaloor → SCMS', 'ROUTE_B – Thrissur → SCMS'],
+    operators: ops.map(o => ({ operatorId: o.operatorId, busNumber: o.busNumber, password: o.password })),
+  });
 }
