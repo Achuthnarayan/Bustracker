@@ -1,101 +1,133 @@
 /**
  * SSET BusTracker — ESP32 GPS Tracker Firmware
  * -----------------------------------------------
- * Hardware:
- *   - ESP32 (any 38-pin variant)
- *   - NEO-6M / NEO-8M GPS module  (UART2: GPIO16=RX, GPIO17=TX)
- *   - SIM800L GSM module (optional, UART1: GPIO4=RX, GPIO2=TX)
+ * WiFi setup: Driver uses their phone to configure WiFi credentials
+ * via a captive portal — no coding or laptop required.
  *
- * Behavior:
- *   1. Reads GPS coordinates every 5 seconds
- *   2. Sends POST /api/bus/update-location to the server
- *   3. Uses WiFi if available, falls back to SIM800L GPRS
- *   4. Onboard LED blinks to show status
+ * First boot flow:
+ *   1. ESP32 creates WiFi hotspot "BusTracker-BUS01"
+ *   2. Driver connects phone to that hotspot
+ *   3. Config page opens automatically (captive portal)
+ *   4. Driver picks their hotspot + enters password → Save
+ *   5. ESP32 saves credentials and starts tracking
+ *   6. On every future boot, connects automatically
  *
- * Libraries needed (install via Arduino Library Manager):
- *   - TinyGPS++  by Mikal Hart
- *   - ArduinoJson by Benoit Blanchon
- *   - HTTPClient (built-in with ESP32 board package)
+ * To reset WiFi (e.g. driver changes phone):
+ *   Hold BOOT button on ESP32 for 3 seconds while powering on
  *
- * Board: "ESP32 Dev Module" in Arduino IDE
- * Upload speed: 115200
+ * Libraries needed (Arduino Library Manager):
+ *   - TinyGPS++     by Mikal Hart
+ *   - ArduinoJson   by Benoit Blanchon
+ *   - WiFiManager   by tzapu  ← new
+ *
+ * Board: ESP32 Dev Module
  */
 
 #include <WiFi.h>
+#include <WiFiManager.h>       // handles WiFi credential storage
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <TinyGPS++.h>
 #include <HardwareSerial.h>
+#include <Preferences.h>       // ESP32 non-volatile storage (like EEPROM)
 
-// ── CONFIG — change these for each bus ───────────────────────────────────────
-const char* BUS_ID       = "KL07-BUS01";   // Must match seed data
-const char* WIFI_SSID    = "YOUR_WIFI_SSID";
-const char* WIFI_PASS    = "YOUR_WIFI_PASSWORD";
+// ── PER-BUS CONFIG — only this changes between buses ─────────────────────────
+const char* BUS_ID     = "KL07-BUS01";   // Change for each bus
+const char* AP_NAME    = "BusTracker-BUS01"; // WiFi name driver sees on first boot
 
-// Server URL — use your Vercel URL in production, localhost for testing
-const char* SERVER_URL   = "https://bustracker-two.vercel.app/api/hardware/location";
-// For local IoT server (Socket.IO real-time):
-// const char* SERVER_URL = "http://192.168.1.100:3001/api/bus/update-location";
+// Server — your live Vercel deployment
+const char* SERVER_URL = "https://bustracker-two.vercel.app/api/hardware/location";
 
-const int   GPS_INTERVAL_MS = 5000;   // Send every 5 seconds
-const int   LED_PIN         = 2;      // Onboard LED
+const int GPS_INTERVAL_MS = 5000;  // Send every 5 seconds
+const int LED_PIN         = 2;     // Onboard LED
+const int RESET_BUTTON    = 0;     // BOOT button — hold to reset WiFi credentials
 
 // ── GPS setup ─────────────────────────────────────────────────────────────────
 TinyGPSPlus gps;
-HardwareSerial gpsSerial(2);   // UART2
+HardwareSerial gpsSerial(2);
 #define GPS_RX_PIN 16
 #define GPS_TX_PIN 17
 #define GPS_BAUD   9600
 
 // ── State ─────────────────────────────────────────────────────────────────────
 unsigned long lastSendTime = 0;
-bool wifiConnected = false;
+Preferences prefs;
 
-// ── LED blink patterns ────────────────────────────────────────────────────────
-void blinkLED(int times, int delayMs = 200) {
+// ── LED helpers ───────────────────────────────────────────────────────────────
+void blinkLED(int times, int ms = 200) {
   for (int i = 0; i < times; i++) {
-    digitalWrite(LED_PIN, HIGH); delay(delayMs);
-    digitalWrite(LED_PIN, LOW);  delay(delayMs);
+    digitalWrite(LED_PIN, HIGH); delay(ms);
+    digitalWrite(LED_PIN, LOW);  delay(ms);
   }
 }
 
-// ── WiFi connect ──────────────────────────────────────────────────────────────
-void connectWiFi() {
-  Serial.print("Connecting to WiFi: ");
-  Serial.println(WIFI_SSID);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
+// ── WiFiManager callback — called while config portal is open ─────────────────
+// LED blinks slowly so driver knows to check their phone
+void configModeCallback(WiFiManager* wm) {
+  Serial.println("Config portal open — connect to: " + String(AP_NAME));
+  Serial.println("Then open 192.168.4.1 in your browser");
+}
 
-  int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
-    delay(500);
-    Serial.print(".");
-    attempts++;
-  }
+// ── Connect WiFi via WiFiManager ──────────────────────────────────────────────
+void setupWiFi() {
+  WiFiManager wm;
 
-  if (WiFi.status() == WL_CONNECTED) {
-    wifiConnected = true;
-    Serial.println("\nWiFi connected! IP: " + WiFi.localIP().toString());
-    blinkLED(3, 100); // 3 fast blinks = WiFi OK
+  // Custom title shown on the config page
+  wm.setTitle("BusTracker WiFi Setup");
+
+  // Timeout: if no one configures within 3 minutes, reboot and try again
+  wm.setConfigPortalTimeout(180);
+
+  // Callback while portal is open
+  wm.setAPCallback(configModeCallback);
+
+  // Try to connect with saved credentials.
+  // If no saved credentials (or they fail), open the config portal.
+  bool connected = wm.autoConnect(AP_NAME);
+
+  if (connected) {
+    Serial.println("WiFi connected: " + WiFi.SSID());
+    Serial.println("IP: " + WiFi.localIP().toString());
+    blinkLED(3, 100); // 3 fast blinks = connected
   } else {
-    wifiConnected = false;
-    Serial.println("\nWiFi failed — will retry");
-    blinkLED(1, 500); // 1 slow blink = WiFi failed
+    Serial.println("WiFi setup timed out — rebooting");
+    blinkLED(5, 500);
+    ESP.restart();
   }
 }
 
-// ── Send GPS data to server ───────────────────────────────────────────────────
+// ── Check if BOOT button held on startup → reset saved WiFi ──────────────────
+void checkResetButton() {
+  pinMode(RESET_BUTTON, INPUT_PULLUP);
+  delay(100);
+
+  if (digitalRead(RESET_BUTTON) == LOW) {
+    Serial.println("BOOT button held — clearing saved WiFi credentials");
+    blinkLED(10, 100);
+
+    WiFiManager wm;
+    wm.resetSettings(); // wipes saved SSID + password from flash
+
+    Serial.println("Credentials cleared — rebooting");
+    delay(1000);
+    ESP.restart();
+  }
+}
+
+// ── Send GPS to server ────────────────────────────────────────────────────────
 bool sendLocation(double lat, double lng, double speed, double heading) {
   if (WiFi.status() != WL_CONNECTED) {
-    connectWiFi();
-    if (!wifiConnected) return false;
+    Serial.println("WiFi lost — reconnecting...");
+    WiFi.reconnect();
+    delay(3000);
+    if (WiFi.status() != WL_CONNECTED) return false;
   }
 
   HTTPClient http;
   http.begin(SERVER_URL);
   http.addHeader("Content-Type", "application/json");
-  http.setTimeout(8000); // 8 second timeout
+  http.setTimeout(8000);
 
-  // Build JSON payload
   StaticJsonDocument<256> doc;
   doc["busId"]     = BUS_ID;
   doc["latitude"]  = lat;
@@ -106,19 +138,16 @@ bool sendLocation(double lat, double lng, double speed, double heading) {
   String payload;
   serializeJson(doc, payload);
 
-  Serial.print("Sending: ");
-  Serial.println(payload);
-
-  int httpCode = http.POST(payload);
+  int code = http.POST(payload);
   http.end();
 
-  if (httpCode == 200 || httpCode == 201) {
-    Serial.println("OK (" + String(httpCode) + ")");
-    blinkLED(1, 100); // 1 quick blink = success
+  if (code == 200 || code == 201) {
+    Serial.printf("[OK] Sent lat=%.6f lng=%.6f speed=%.1f\n", lat, lng, speed);
+    blinkLED(1, 80);
     return true;
   } else {
-    Serial.println("HTTP Error: " + String(httpCode));
-    blinkLED(2, 300); // 2 blinks = HTTP error
+    Serial.printf("[ERR] HTTP %d\n", code);
+    blinkLED(2, 300);
     return false;
   }
 }
@@ -128,24 +157,26 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
 
-  Serial.println("=== SSET BusTracker ESP32 ===");
-  Serial.print("Bus ID: "); Serial.println(BUS_ID);
+  Serial.println("\n=== SSET BusTracker ===");
+  Serial.print("Bus: "); Serial.println(BUS_ID);
 
-  // Start GPS serial
+  // Check if driver is holding BOOT to reset WiFi
+  checkResetButton();
+
+  // Start GPS
   gpsSerial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
-  Serial.println("GPS serial started on UART2");
+  Serial.println("GPS ready");
 
-  // Connect WiFi
-  connectWiFi();
+  // Connect WiFi (shows config portal if no credentials saved)
+  setupWiFi();
 
-  // Startup blink
-  blinkLED(5, 100);
-  Serial.println("Ready. Waiting for GPS fix...");
+  blinkLED(5, 80);
+  Serial.println("Tracking started. Waiting for GPS fix...");
 }
 
 // ── Main loop ─────────────────────────────────────────────────────────────────
 void loop() {
-  // Feed GPS data into TinyGPS++ parser
+  // Feed GPS parser
   while (gpsSerial.available() > 0) {
     gps.encode(gpsSerial.read());
   }
@@ -154,32 +185,18 @@ void loop() {
   if (now - lastSendTime >= GPS_INTERVAL_MS) {
     lastSendTime = now;
 
-    if (gps.location.isValid() && gps.location.isUpdated()) {
-      double lat     = gps.location.lat();
-      double lng     = gps.location.lng();
-      double speed   = gps.speed.kmph();
-      double heading = gps.course.deg();
-      int    sats    = gps.satellites.value();
-
-      Serial.printf("[GPS] lat=%.6f lng=%.6f speed=%.1fkm/h heading=%.1f sats=%d\n",
-                    lat, lng, speed, heading, sats);
-
-      sendLocation(lat, lng, speed, heading);
-
+    if (gps.location.isValid()) {
+      sendLocation(
+        gps.location.lat(),
+        gps.location.lng(),
+        gps.speed.kmph(),
+        gps.course.deg()
+      );
     } else {
-      // No GPS fix yet
-      int age = gps.location.age();
-      Serial.printf("[GPS] No fix yet (age=%dms, chars=%d, sats=%d)\n",
-                    age, gps.charsProcessed(), gps.satellites.value());
-
-      // Blink LED slowly while waiting for fix
+      Serial.printf("[GPS] Waiting for fix... sats=%d chars=%d\n",
+        gps.satellites.value(), gps.charsProcessed());
+      // Slow blink while waiting for GPS fix
       digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-
-      // Reconnect WiFi if dropped
-      if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi dropped — reconnecting...");
-        connectWiFi();
-      }
     }
   }
 }
