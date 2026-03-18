@@ -60,9 +60,11 @@ const ticketSchema = new Schema({
   to:           String,
   amount:       Number,
   paymentMethod:String,
-  status:       { type: String, default: 'Active' },
-  validUntil:   Date,
-  purchaseDate: Date,
+  status:            { type: String, default: 'Active' },
+  validUntil:        Date,
+  purchaseDate:      Date,
+  razorpayOrderId:   String,
+  razorpayPaymentId: String,
 }, { timestamps: true });
 
 // ── TripHistory ───────────────────────────────────────────────────────────────
