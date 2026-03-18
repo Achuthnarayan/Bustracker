@@ -41,7 +41,7 @@ export default function RoutesPage() {
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>{route.description}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--orange)' }}>KES {route.price}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent)' }}>₹{route.price}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{route.duration}</div>
               </div>
             </div>
@@ -53,8 +53,8 @@ export default function RoutesPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
                     <div style={{
                       width: 10, height: 10, borderRadius: '50%',
-                      background: i === 0 || i === route.stops.length - 1 ? 'var(--orange)' : '#CBD5E1',
-                      border: '2px solid #fff', boxShadow: '0 0 0 2px var(--orange)',
+                      background: i === 0 || i === route.stops.length - 1 ? 'var(--accent)' : '#CBD5E1',
+                      border: '2px solid #fff', boxShadow: '0 0 0 2px var(--accent)',
                       flexShrink: 0,
                     }} />
                     {i < route.stops.length - 1 && <div style={{ width: 2, height: 16, background: '#E2E8F0' }} />}
