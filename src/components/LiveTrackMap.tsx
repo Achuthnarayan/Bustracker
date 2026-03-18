@@ -22,8 +22,13 @@ export default function LiveTrackMap() {
       L.Icon.Default.mergeOptions({ iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png', iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png' });
 
       if (!mapRef.current) {
-        mapRef.current = L.map('map').setView([12.9716, 77.5946], 13);
+        // Default to SCMS Karukutty; override with user's actual location
+        mapRef.current = L.map('map').setView([10.2167, 76.4167], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(mapRef.current);
+        navigator.geolocation?.getCurrentPosition(
+          (pos) => mapRef.current?.setView([pos.coords.latitude, pos.coords.longitude], 13, { animate: true }),
+          () => {} // silently keep default if denied
+        );
       }
       loadBuses(L);
       const interval = setInterval(() => loadBuses(L), 5000);
