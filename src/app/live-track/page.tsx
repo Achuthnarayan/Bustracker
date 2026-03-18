@@ -190,7 +190,11 @@ export default function LiveTrackPage() {
                     {stop.arrivalTime && stop.arrivalTime !== '—' ? (
                       <>
                         <div style={{ fontSize: 12, fontWeight: 700, color: isPassed ? '#94a3b8' : '#1e293b' }}>{stop.arrivalTime}</div>
-                        {stop.confidence && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>{stop.confidence}</div>}
+                        {stop.confidence && (
+                          <div style={{ fontSize: 10, color: stop.confidence === 'scheduled' ? '#6366f1' : '#94a3b8', marginTop: 1 }}>
+                            {stop.confidence === 'scheduled' ? 'scheduled' : stop.confidence}
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div style={{ fontSize: 11, color: '#cbd5e1' }}>—</div>

@@ -29,16 +29,29 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
       }
     }
 
+    const [sh, sm] = (route.startTime || '08:05').split(':').map(Number);
+    const scheduledArrival = (offsetMin: number): string => {
+      const arrMins = sh * 60 + sm + offsetMin;
+      const h = Math.floor(arrMins / 60) % 24;
+      const m = arrMins % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    };
+
     const stops = [];
     for (let i = 0; i < route.stops.length; i++) {
       const stop = route.stops[i];
       if (i < currentStopIndex) {
-        stops.push({ ...stop.toObject(), status: 'passed', etaMinutes: 0, etaFormatted: 'Passed', arrivalTime: '—', confidence: null });
+        stops.push({ ...stop.toObject(), status: 'passed', etaMinutes: 0, etaFormatted: 'Passed', arrivalTime: scheduledArrival(stop.expectedTime), confidence: null });
       } else if (i === currentStopIndex) {
-        stops.push({ ...stop.toObject(), status: 'current', etaMinutes: 0, etaFormatted: 'Here now', arrivalTime: '—', confidence: null });
+        stops.push({ ...stop.toObject(), status: 'current', etaMinutes: 0, etaFormatted: 'Here now', arrivalTime: scheduledArrival(stop.expectedTime), confidence: null });
       } else {
-        const pred = await predictETA(bus, stop, route.routeId, route.stops[currentStopIndex].name);
-        stops.push({ ...stop.toObject(), status: 'upcoming', ...pred });
+        if (bus.status === 'Active') {
+          const pred = await predictETA(bus, stop, route.routeId, route.stops[currentStopIndex].name);
+          stops.push({ ...stop.toObject(), status: 'upcoming', ...pred });
+        } else {
+          // Bus offline — show scheduled times based on startTime
+          stops.push({ ...stop.toObject(), status: 'upcoming', etaMinutes: stop.expectedTime, etaFormatted: `+${stop.expectedTime} min`, arrivalTime: scheduledArrival(stop.expectedTime), confidence: 'scheduled' });
+        }
       }
     }
 
