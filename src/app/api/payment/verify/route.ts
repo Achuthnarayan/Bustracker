@@ -30,6 +30,13 @@ export async function POST(req: Request) {
 
     // Signature valid — create ticket
     await connectDB();
+    const now = new Date();
+    const validUntil = ticketType === 'Monthly'
+      ? new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+      : ticketType === 'Weekly'
+      ? new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+      : new Date(now.getTime() + 24 * 60 * 60 * 1000); // Single = 1 day
+
     const ticket = await Ticket.create({
       ticketId: 'TKT' + Date.now(),
       userId: user.id,
@@ -41,8 +48,8 @@ export async function POST(req: Request) {
       amount,
       paymentMethod: paymentMethod || 'Razorpay',
       status: 'Active',
-      purchaseDate: new Date(),
-      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      purchaseDate: now,
+      validUntil,
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
     });

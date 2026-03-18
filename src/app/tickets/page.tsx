@@ -4,6 +4,30 @@ import { useRouter } from 'next/navigation';
 import TopNav from '@/components/TopNav';
 import { useAuth, getToken } from '@/hooks/useAuth';
 
+// Haversine distance in km
+function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ₹15 base + ₹5 per 4 km slab
+function calcFare(km: number, type: string) {
+  const slabs = Math.ceil(km / 4);
+  const base = 15 + (slabs - 1) * 5;
+  if (type === 'Weekly')  return Math.round(base * 5 * 0.85);   // 5 days, 15% off
+  if (type === 'Monthly') return Math.round(base * 22 * 0.75);  // 22 days, 25% off
+  return base; // Single
+}
+
+const TICKET_TYPES = [
+  { value: 'Single',  label: 'Single Trip',  desc: 'One-way journey',          discount: null },
+  { value: 'Weekly',  label: 'Weekly Pass',  desc: '5 days · 15% off',         discount: '15% off' },
+  { value: 'Monthly', label: 'Monthly Pass', desc: '22 days · 25% off',        discount: '25% off' },
+];
+
 export default function TicketsPage() {
   useAuth();
   const router = useRouter();
@@ -28,15 +52,32 @@ export default function TicketsPage() {
 
   const selectedRoute = routes.find(r => r.routeId === form.route);
 
+  // Compute fare from stop coordinates
+  const fare = (() => {
+    if (!selectedRoute || !form.from || !form.to) return null;
+    const stops: any[] = selectedRoute.stops || [];
+    const fromStop = stops.find((s: any) => s.name === form.from);
+    const toStop   = stops.find((s: any) => s.name === form.to);
+    if (!fromStop || !toStop) return null;
+    const km = haversine(fromStop.latitude, fromStop.longitude, toStop.latitude, toStop.longitude);
+    return { km: +km.toFixed(1), amount: calcFare(km, form.ticketType) };
+  })();
+
   function goToPayment(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.route || !form.from || !form.to) return;
-    const params = new URLSearchParams({ route: form.route, from: form.from, to: form.to, ticketType: form.ticketType });
+    if (!form.route || !form.from || !form.to || !fare) return;
+    const params = new URLSearchParams({
+      route: form.route,
+      from: form.from,
+      to: form.to,
+      ticketType: form.ticketType,
+      amount: String(fare.amount),
+    });
     router.push(`/payment?${params.toString()}`);
   }
 
   const active = tickets.filter(t => ['active', 'Active'].includes(t.status));
-  const past = tickets.filter(t => !['active', 'Active'].includes(t.status));
+  const past   = tickets.filter(t => !['active', 'Active'].includes(t.status));
 
   return (
     <div className="page-shell" style={{ background: 'var(--bg)' }}>
@@ -54,45 +95,97 @@ export default function TicketsPage() {
 
         {showForm && (
           <form onSubmit={goToPayment} style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, padding: 18, marginBottom: 20 }}>
-            <p style={{ fontWeight: 800, fontSize: 15, marginBottom: 14 }}>Select Trip</p>
+            <p style={{ fontWeight: 800, fontSize: 15, marginBottom: 14 }}>Book a Ticket</p>
+
+            {/* Bus / Route selection */}
             <div className="input-group">
-              <label>Route</label>
+              <label>Select Bus</label>
               <select value={form.route} onChange={e => setForm(f => ({ ...f, route: e.target.value, from: '', to: '' }))} required>
-                <option value="">Select route</option>
-                {routes.map(r => <option key={r.routeId} value={r.routeId}>{r.name} — ₹{r.price}</option>)}
+                <option value="">Choose your bus</option>
+                {routes.map(r => (
+                  <option key={r.routeId} value={r.routeId}>
+                    {r.name}
+                  </option>
+                ))}
               </select>
             </div>
+
             {selectedRoute && (
               <>
                 <div className="input-group">
-                  <label>From</label>
+                  <label>Boarding Stop</label>
                   <select value={form.from} onChange={e => setForm(f => ({ ...f, from: e.target.value }))} required>
-                    <option value="">Select stop</option>
-                    {selectedRoute.stops.map((s: any) => <option key={s.name} value={s.name}>{s.name}</option>)}
+                    <option value="">Where are you getting on?</option>
+                    {selectedRoute.stops.map((s: any) => (
+                      <option key={s.name} value={s.name}>{s.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="input-group">
-                  <label>To</label>
+                  <label>Destination Stop</label>
                   <select value={form.to} onChange={e => setForm(f => ({ ...f, to: e.target.value }))} required>
-                    <option value="">Select stop</option>
-                    {selectedRoute.stops.map((s: any) => <option key={s.name} value={s.name}>{s.name}</option>)}
+                    <option value="">Where are you getting off?</option>
+                    {selectedRoute.stops.map((s: any) => (
+                      <option key={s.name} value={s.name}>{s.name}</option>
+                    ))}
                   </select>
                 </div>
               </>
             )}
-            <div className="input-group">
-              <label>Ticket Type</label>
-              <select value={form.ticketType} onChange={e => setForm(f => ({ ...f, ticketType: e.target.value }))}>
-                <option>Single</option>
-                <option>Monthly</option>
-              </select>
+
+            {/* Ticket type cards */}
+            <label className="input-group" style={{ display: 'block', marginBottom: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Ticket Type</span>
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+              {TICKET_TYPES.map(tt => (
+                <div key={tt.value} onClick={() => setForm(f => ({ ...f, ticketType: tt.value }))}
+                  style={{
+                    border: `2px solid ${form.ticketType === tt.value ? 'var(--accent)' : 'var(--border)'}`,
+                    borderRadius: 12, padding: '12px 14px', cursor: 'pointer',
+                    background: form.ticketType === tt.value ? 'var(--accent-light)' : '#fff',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>{tt.label}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{tt.desc}</div>
+                  </div>
+                  {tt.discount && (
+                    <span style={{ background: '#D1FAE5', color: '#065F46', fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 20 }}>
+                      {tt.discount}
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
-            {selectedRoute && (
-              <div style={{ background: 'var(--accent-light)', borderRadius: 10, padding: '10px 14px', marginBottom: 14, fontSize: 13 }}>
-                Total: <strong>₹{selectedRoute.price}</strong>
+
+            {/* Fare breakdown */}
+            {fare && (
+              <div style={{ background: 'var(--accent-light)', borderRadius: 12, padding: '12px 14px', marginBottom: 16, fontSize: 13 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Distance</span>
+                  <span>{fare.km} km</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Fare (₹15 base + ₹5/4km)</span>
+                  <span>₹{calcFare(fare.km, 'Single')}</span>
+                </div>
+                {form.ticketType !== 'Single' && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ color: 'var(--text-muted)' }}>
+                      {form.ticketType === 'Weekly' ? '× 5 days − 15%' : '× 22 days − 25%'}
+                    </span>
+                    <span style={{ color: '#10B981', fontWeight: 700 }}>discount applied</span>
+                  </div>
+                )}
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 4, display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 15 }}>
+                  <span>Total</span>
+                  <span style={{ color: 'var(--accent)' }}>₹{fare.amount}</span>
+                </div>
               </div>
             )}
-            <button type="submit" className="btn btn-primary" disabled={!form.route || !form.from || !form.to}>
+
+            <button type="submit" className="btn btn-primary" disabled={!form.route || !form.from || !form.to || !fare}>
               Continue to Payment →
             </button>
           </form>
@@ -128,6 +221,9 @@ function TicketCard({ ticket, active }: { ticket: any; active: boolean }) {
   const date = ticket.purchaseDate
     ? new Date(ticket.purchaseDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     : '—';
+  const validUntil = ticket.validUntil
+    ? new Date(ticket.validUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '—';
   return (
     <div style={{
       background: active ? 'linear-gradient(135deg,#1A1A2E,#16213E)' : '#fff',
@@ -140,11 +236,15 @@ function TicketCard({ ticket, active }: { ticket: any; active: boolean }) {
         <div>
           <div style={{ fontSize: 15, fontWeight: 800 }}>{ticket.routeName || ticket.route}</div>
           <div style={{ fontSize: 12, opacity: 0.65, marginTop: 2 }}>{ticket.from} → {ticket.to}</div>
+          <div style={{ fontSize: 11, opacity: 0.5, marginTop: 2 }}>{ticket.ticketType || 'Single'} pass</div>
         </div>
         <span className={`badge ${active ? 'badge-green' : 'badge-red'}`}>{ticket.status}</span>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-        <div style={{ fontSize: 11, opacity: 0.6 }}>{date}</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 10 }}>
+        <div>
+          <div style={{ fontSize: 11, opacity: 0.6 }}>Bought {date}</div>
+          {active && <div style={{ fontSize: 11, opacity: 0.6, marginTop: 2 }}>Valid until {validUntil}</div>}
+        </div>
         <div style={{ fontSize: 16, fontWeight: 800, color: active ? 'var(--accent-muted)' : 'var(--accent)' }}>₹{ticket.amount}</div>
       </div>
     </div>
