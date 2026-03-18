@@ -18,10 +18,18 @@ export async function GET(req: Request) {
 
   const assignment = getWeeklyAssignment(idx);
 
+  const routeDoc = await (await import('@/models')).Route.findOne({ routeId: assignment.route });
+
   return NextResponse.json({
     ...assignment,
     operatorIndex: idx,
     weekNumber: getISOWeek(new Date()),
     nextRotation: nextMonday(),
+    startTime: routeDoc?.startTime || '07:00',
+    earliestStart: (() => {
+      const [sh, sm] = (routeDoc?.startTime || '07:00').split(':').map(Number);
+      const e = sh * 60 + sm - 15;
+      return `${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`;
+    })(),
   });
 }
