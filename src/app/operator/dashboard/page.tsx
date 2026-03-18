@@ -6,33 +6,34 @@ import Toast from '@/components/Toast';
 
 type TripState = 'idle' | 'active' | 'ended';
 
-const ROUTE_NAMES: Record<string, string> = {
-  ROUTE_1: 'Route 1 – Angamaly → SSET',
-  ROUTE_2: 'Route 2 – Chalakudy → SSET',
-  ROUTE_3: 'Route 3 – Aluva → SSET',
-  ROUTE_4: 'Route 4 – Perumbavoor → SSET',
-  ROUTE_5: 'Route 5 – Kalady → SSET',
-  ROUTE_6: 'Route 6 – North Paravur → SSET',
-  ROUTE_7: 'Route 7 – Thrissur → SSET',
-};
-
 export default function OperatorDashboard() {
   useAuth('operator');
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser]           = useState<any>(null);
+  const [assignment, setAssignment] = useState<any>(null);
   const [tripState, setTripState] = useState<TripState>('idle');
-  const [location, setLocation] = useState<any>(null);
-  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const [location, setLocation]   = useState<any>(null);
+  const [toast, setToast]         = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const watchRef = useRef<number | null>(null);
 
   useEffect(() => {
     const u = localStorage.getItem('bus_tracker_user');
     if (u) setUser(JSON.parse(u));
+    loadAssignment();
     return () => stopGPS();
   }, []);
 
-  // ── GPS helpers ────────────────────────────────────────────────────────────
+  async function loadAssignment() {
+    try {
+      const res = await fetch('/api/operator/my-assignment', {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (res.ok) setAssignment(await res.json());
+    } catch {}
+  }
+
+  // ── GPS ────────────────────────────────────────────────────────────────────
   function startGPS(busNumber: string) {
     if (!navigator.geolocation) return;
     watchRef.current = navigator.geolocation.watchPosition(
@@ -69,8 +70,7 @@ export default function OperatorDashboard() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       setTripState('active');
-      setToast({ msg: `Trip started — ${data.busNumber} on ${ROUTE_NAMES[data.route] || data.route}`, type: 'success' });
-      // Request GPS permission then start watching
+      setToast({ msg: `Trip started — ${data.busNumber} · ${data.routeName || data.route}`, type: 'success' });
       navigator.geolocation.getCurrentPosition(
         () => startGPS(data.busNumber),
         () => setToast({ msg: 'Location permission denied. Enable GPS.', type: 'error' }),
@@ -112,23 +112,20 @@ export default function OperatorDashboard() {
     router.push('/operator/login');
   }
 
-  const routeLabel = ROUTE_NAMES[user?.route] || user?.route || '--';
-
   return (
     <div className="page-shell">
       {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#4F46E5,#3730A3)', padding: '32px 24px 40px' }}>
+      <div style={{ background: 'linear-gradient(135deg,#1e3a8a,#1e40af)', padding: '32px 24px 40px' }}>
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: 6 }}>Driver Portal 🚍</div>
         <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 4 }}>{user?.name || 'Driver'}</div>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>SCMS School of Engineering and Technology</div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>SSET – Karukutty</div>
 
-        {/* Bus + Route chips */}
         <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
           <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '6px 14px', fontSize: 12, color: '#fff', fontWeight: 600 }}>
-            🚌 {user?.busNumber || '--'}
+            🚌 {assignment?.busNumber || '—'}
           </div>
           <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '6px 14px', fontSize: 12, color: '#fff', fontWeight: 600 }}>
-            🗺️ {user?.route || '--'}
+            🗺️ {assignment?.routeName || '—'}
           </div>
           <div style={{
             background: tripState === 'active' ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)',
@@ -141,13 +138,14 @@ export default function OperatorDashboard() {
 
       <div style={{ flex: 1, padding: '24px 20px 40px', background: 'var(--bg)' }}>
 
-        {/* Assigned Bus Info */}
-        <p className="sec-label">Assigned Bus & Route</p>
+        {/* Weekly assignment card */}
+        <p className="sec-label">This Week's Assignment</p>
         <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginBottom: 20 }}>
-          {[
-            { label: 'Bus Number', val: user?.busNumber || '--' },
-            { label: 'Route',      val: user?.route || '--' },
-            { label: 'Route Name', val: routeLabel },
+          {assignment ? [
+            { label: 'Bus Number',  val: assignment.busNumber },
+            { label: 'Route',       val: assignment.routeName },
+            { label: 'Week No.',    val: `Week ${assignment.weekNumber}` },
+            { label: 'Next Rotation', val: `Mon, ${assignment.nextRotation}` },
           ].map((row, i, arr) => (
             <div key={row.label} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -157,7 +155,15 @@ export default function OperatorDashboard() {
               <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{row.label}</span>
               <span style={{ fontWeight: 700, maxWidth: '60%', textAlign: 'right', fontSize: 13 }}>{row.val}</span>
             </div>
-          ))}
+          )) : (
+            <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Loading assignment...</div>
+          )}
+        </div>
+
+        {/* Rotation notice */}
+        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 12, padding: '10px 14px', marginBottom: 20, fontSize: 12, color: '#1e40af', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          <span>🔄</span>
+          <span>Bus assignments rotate every Monday. Your next bus will be assigned automatically on <strong>{assignment?.nextRotation || '—'}</strong>.</span>
         </div>
 
         {/* Trip Control */}
@@ -166,9 +172,9 @@ export default function OperatorDashboard() {
           <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 20 }}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Ready to start?</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 18, lineHeight: 1.6 }}>
-              Pressing Start Trip will mark <strong>{user?.busNumber}</strong> as Active on <strong>{user?.route}</strong> and begin sharing your GPS location with students.
+              Pressing Start Trip will mark <strong>{assignment?.busNumber || '—'}</strong> as Active on <strong>{assignment?.routeName || '—'}</strong> and begin sharing your GPS location with students.
             </div>
-            <button className="btn btn-primary" disabled={actionLoading} onClick={handleStartTrip}>
+            <button className="btn btn-primary" disabled={actionLoading || !assignment} onClick={handleStartTrip}>
               {actionLoading ? <><span className="spinner" /> Starting...</> : '▶ Start Trip'}
             </button>
           </div>
@@ -179,7 +185,7 @@ export default function OperatorDashboard() {
             <div style={{ background: '#F0FDF4', border: '1.5px solid #10B981', borderRadius: 16, padding: 20, marginBottom: 16 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: '#065F46', marginBottom: 6 }}>🟢 Trip in Progress</div>
               <div style={{ fontSize: 13, color: '#047857', marginBottom: 12 }}>
-                Broadcasting live GPS for <strong>{user?.busNumber}</strong>
+                Broadcasting live GPS for <strong>{assignment?.busNumber}</strong>
               </div>
               {location && (
                 <div style={{ fontSize: 12, color: '#065F46', fontFamily: 'monospace', background: 'rgba(16,185,129,0.1)', borderRadius: 8, padding: '8px 12px' }}>
@@ -203,10 +209,10 @@ export default function OperatorDashboard() {
           </div>
         )}
 
-        {/* Live GPS Data — only when active */}
+        {/* Live GPS — only when active */}
         {tripState === 'active' && (
           <>
-            <p className="sec-label">Live GPS Data</p>
+            <p className="sec-label">Live GPS</p>
             <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, overflow: 'hidden', marginBottom: 24 }}>
               {[
                 { label: 'Latitude',  val: location?.latitude?.toFixed(6)  || 'Waiting...' },

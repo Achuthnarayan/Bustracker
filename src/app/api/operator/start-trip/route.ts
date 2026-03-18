@@ -2,21 +2,26 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import { Bus, Operator } from '@/models';
 import { requireAuth } from '@/lib/auth';
+import { getWeeklyAssignment } from '@/lib/weeklyRotation';
 
 export async function POST(req: Request) {
   const user = requireAuth(req);
-  if (!user || user.role !== 'operator') return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  if (!user || user.role !== 'operator')
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   try {
     await connectDB();
-    const operator = await Operator.findOne({ operatorId: user.operatorId });
-    if (!operator) return NextResponse.json({ message: 'Operator not found' }, { status: 404 });
-    if (!operator.busNumber) return NextResponse.json({ message: 'No bus assigned to this operator' }, { status: 400 });
 
-    // Set bus to Active with the operator's assigned route
+    // Get stable operator index for rotation
+    const operators = await Operator.find({}).sort({ createdAt: 1 });
+    const idx = operators.findIndex(o => o.operatorId === user.operatorId);
+    if (idx === -1) return NextResponse.json({ message: 'Operator not found' }, { status: 404 });
+
+    const { busNumber, route, routeName } = getWeeklyAssignment(idx);
+
     const bus = await Bus.findOneAndUpdate(
-      { busNumber: operator.busNumber },
-      { status: 'Active', route: operator.route, lastUpdate: new Date() },
+      { busNumber },
+      { status: 'Active', route, lastUpdate: new Date() },
       { new: true, upsert: true }
     );
 
@@ -24,6 +29,7 @@ export async function POST(req: Request) {
       message: 'Trip started',
       busNumber: bus.busNumber,
       route: bus.route,
+      routeName,
       status: bus.status,
     });
   } catch (err: any) {
