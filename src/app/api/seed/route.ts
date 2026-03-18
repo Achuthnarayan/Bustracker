@@ -9,7 +9,7 @@ const ROUTES = [
     routeId: 'ROUTE_1',
     name: 'Route 1 – Angamaly → SSET',
     description: 'Angamaly KSRTC · LF Hospital · Angamaly Junction · Karukutty Junction · Athani · SSET',
-    startTime: '07:00', duration: '35 mins', totalDuration: 35, price: 25, active: true,
+    startTime: '08:05', eveningStartTime: '16:00', duration: '35 mins', totalDuration: 35, price: 25, active: true,
     stops: [
       { name: 'Angamaly KSRTC Stand',   order: 1, expectedTime: 0,  latitude: 10.1960, longitude: 76.5720 },
       { name: 'LF Hospital',            order: 2, expectedTime: 7,  latitude: 10.1985, longitude: 76.5680 },
@@ -23,7 +23,7 @@ const ROUTES = [
     routeId: 'ROUTE_2',
     name: 'Route 2 – Chalakudy → SSET',
     description: 'Chalakudy KSRTC · South Junction · Koratty · Muringoor · Karukutty · SSET',
-    startTime: '07:00', duration: '55 mins', totalDuration: 55, price: 40, active: true,
+    startTime: '07:45', eveningStartTime: '16:00', duration: '55 mins', totalDuration: 55, price: 40, active: true,
     stops: [
       { name: 'Chalakudy KSRTC Stand',  order: 1, expectedTime: 0,  latitude: 10.3000, longitude: 76.3333 },
       { name: 'South Junction',         order: 2, expectedTime: 8,  latitude: 10.2950, longitude: 76.3400 },
@@ -37,7 +37,7 @@ const ROUTES = [
     routeId: 'ROUTE_3',
     name: 'Route 3 – Aluva → SSET',
     description: 'Aluva Metro · UC College · Desom · Athani · Karukutty · SSET',
-    startTime: '07:00', duration: '45 mins', totalDuration: 45, price: 35, active: true,
+    startTime: '07:55', eveningStartTime: '16:00', duration: '45 mins', totalDuration: 45, price: 35, active: true,
     stops: [
       { name: 'Aluva Metro Station',    order: 1, expectedTime: 0,  latitude: 10.1004, longitude: 76.3570 },
       { name: 'UC College',             order: 2, expectedTime: 8,  latitude: 10.1050, longitude: 76.3700 },
@@ -51,7 +51,7 @@ const ROUTES = [
     routeId: 'ROUTE_4',
     name: 'Route 4 – Perumbavoor → SSET',
     description: 'Perumbavoor · Kuruppampady · Kalady · Mattoor · Angamaly · Karukutty · SSET',
-    startTime: '07:00', duration: '70 mins', totalDuration: 70, price: 50, active: true,
+    startTime: '07:30', eveningStartTime: '16:00', duration: '70 mins', totalDuration: 70, price: 50, active: true,
     stops: [
       { name: 'Perumbavoor Bus Stand',  order: 1, expectedTime: 0,  latitude: 10.1167, longitude: 76.4667 },
       { name: 'Kuruppampady',           order: 2, expectedTime: 12, latitude: 10.1333, longitude: 76.4833 },
@@ -66,7 +66,7 @@ const ROUTES = [
     routeId: 'ROUTE_5',
     name: 'Route 5 – Kalady → SSET',
     description: 'Kalady · Mattoor · Nayathode · Angamaly · Karukutty · SSET',
-    startTime: '07:00', duration: '40 mins', totalDuration: 40, price: 30, active: true,
+    startTime: '08:00', eveningStartTime: '16:00', duration: '40 mins', totalDuration: 40, price: 30, active: true,
     stops: [
       { name: 'Kalady',                 order: 1, expectedTime: 0,  latitude: 10.1667, longitude: 76.5333 },
       { name: 'Mattoor',                order: 2, expectedTime: 8,  latitude: 10.1833, longitude: 76.5500 },
@@ -80,7 +80,7 @@ const ROUTES = [
     routeId: 'ROUTE_6',
     name: 'Route 6 – North Paravur → SSET',
     description: 'North Paravur · Cherai Junction · Moothakunnam · Athani · Karukutty · SSET',
-    startTime: '07:00', duration: '65 mins', totalDuration: 65, price: 45, active: true,
+    startTime: '07:35', eveningStartTime: '16:00', duration: '65 mins', totalDuration: 65, price: 45, active: true,
     stops: [
       { name: 'North Paravur',          order: 1, expectedTime: 0,  latitude: 10.1500, longitude: 76.2167 },
       { name: 'Cherai Junction',        order: 2, expectedTime: 12, latitude: 10.1600, longitude: 76.2800 },
@@ -94,7 +94,7 @@ const ROUTES = [
     routeId: 'ROUTE_7',
     name: 'Route 7 – Thrissur → SSET',
     description: 'Thrissur · Kodakara · Chalakudy · Koratty · Karukutty · SSET',
-    startTime: '07:00', duration: '90 mins', totalDuration: 90, price: 60, active: true,
+    startTime: '07:10', eveningStartTime: '16:00', duration: '90 mins', totalDuration: 90, price: 60, active: true,
     stops: [
       { name: 'Thrissur KSRTC',         order: 1, expectedTime: 0,  latitude: 10.5276, longitude: 76.2144 },
       { name: 'Kodakara',               order: 2, expectedTime: 25, latitude: 10.3667, longitude: 76.3167 },

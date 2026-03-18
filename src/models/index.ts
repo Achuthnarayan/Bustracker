@@ -45,7 +45,8 @@ const routeSchema = new Schema({
   price:        Number,
   duration:     String,
   totalDuration:Number,
-  startTime:    String,
+  startTime:        String,   // morning departure (from first stop)
+  eveningStartTime: String,   // evening departure (from SSET, always 16:00)
   active:       { type: Boolean, default: true },
 }, { timestamps: true });
 
