@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { Ticket, User, Bus } from '@/models';
+import { Ticket, User, Bus, Operator } from '@/models';
 
-// Wipes all tickets, student accounts, and stale buses
-// Then re-creates clean buses from the 7 seeded operators
+// Wipes all tickets, student accounts, operators, and stale buses
 export async function POST() {
   await connectDB();
-  const tickets = await Ticket.deleteMany({});
-  const users   = await User.deleteMany({});
+  const tickets   = await Ticket.deleteMany({});
+  const users     = await User.deleteMany({});
+  const operators = await Operator.deleteMany({});
 
   // Remove ALL buses then re-insert clean ones
   await Bus.deleteMany({});
@@ -22,9 +22,10 @@ export async function POST() {
   ]);
 
   return NextResponse.json({
-    message: 'Purged tickets, users, and stale buses. Clean buses re-created.',
-    ticketsDeleted: tickets.deletedCount,
-    usersDeleted: users.deletedCount,
+    message: 'Purged tickets, users, operators, and stale buses. Clean buses re-created.',
+    ticketsDeleted:   tickets.deletedCount,
+    usersDeleted:     users.deletedCount,
+    operatorsDeleted: operators.deletedCount,
     busesReset: 7,
   });
 }
