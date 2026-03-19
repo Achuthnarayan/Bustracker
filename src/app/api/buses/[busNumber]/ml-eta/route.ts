@@ -10,6 +10,12 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
     await connectDB();
     const bus = await Bus.findOne({ busNumber: params.busNumber });
     if (!bus) return NextResponse.json({ message: 'Bus not found' }, { status: 404 });
+
+    // Auto-detect stale: if last update > 2 min ago, treat as Offline
+    const STALE_MS = 2 * 60 * 1000;
+    const effectiveStatus = bus.status === 'Active' && (Date.now() - new Date(bus.lastUpdate).getTime()) > STALE_MS
+      ? 'Offline'
+      : bus.status;
     const route = await Route.findOne({ routeId: bus.route });
     if (!route) return NextResponse.json({ message: 'Route not found' }, { status: 404 });
 
@@ -45,7 +51,7 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
       } else if (i === currentStopIndex) {
         stops.push({ ...stop.toObject(), status: 'current', etaMinutes: 0, etaFormatted: 'Here now', arrivalTime: scheduledArrival(stop.expectedTime), confidence: null });
       } else {
-        if (bus.status === 'Active') {
+        if (effectiveStatus === 'Active') {
           const pred = await predictETA(bus, stop, route.routeId, route.stops[currentStopIndex].name);
           stops.push({ ...stop.toObject(), status: 'upcoming', ...pred });
         } else {
@@ -55,7 +61,7 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
       }
     }
 
-    return NextResponse.json({ busNumber: bus.busNumber, routeId: route.routeId, routeName: route.name, currentStop: route.stops[currentStopIndex]?.name, speed: bus.speed, status: bus.status, lastUpdate: bus.lastUpdate, stops });
+    return NextResponse.json({ busNumber: bus.busNumber, routeId: route.routeId, routeName: route.name, currentStop: route.stops[currentStopIndex]?.name, speed: bus.speed, status: effectiveStatus, lastUpdate: bus.lastUpdate, stops });
   } catch (err: any) {
     return NextResponse.json({ message: err.message }, { status: 500 });
   }
