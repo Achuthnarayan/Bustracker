@@ -158,6 +158,16 @@ export default function LiveTrackPage() {
                 color: selected.status === 'Active' ? '#065F46' : '#991B1B',
               }}>{selected.status === 'Active' ? '● Live' : '● Offline'}</span>
               <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{selected.speed || 0} km/h</div>
+              {timeline.delayMinutes !== 0 && timeline.delayMinutes !== undefined && (
+                <div style={{
+                  marginTop: 4, fontSize: 11, fontWeight: 700,
+                  color: timeline.delayMinutes > 0 ? '#b45309' : '#065f46',
+                }}>
+                  {timeline.delayMinutes > 0
+                    ? `⚠ ${timeline.delayMinutes} min late`
+                    : `✓ ${Math.abs(timeline.delayMinutes)} min early`}
+                </div>
+              )}
             </div>
           </div>
 

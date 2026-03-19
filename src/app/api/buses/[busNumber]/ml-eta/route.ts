@@ -36,12 +36,26 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
     }
 
     const [sh, sm] = (route.startTime || '08:05').split(':').map(Number);
-    const scheduledArrival = (offsetMin: number): string => {
-      const arrMins = sh * 60 + sm + offsetMin;
+    const scheduledArrival = (offsetMin: number, delayMin = 0): string => {
+      const arrMins = sh * 60 + sm + offsetMin + delayMin;
       const h = Math.floor(arrMins / 60) % 24;
       const m = arrMins % 60;
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     };
+
+    // ── Delay detection ───────────────────────────────────────────────────────
+    // Compare where the bus actually is vs where it should be by now (schedule)
+    let delayMinutes = 0;
+    if (effectiveStatus === 'Active') {
+      const now = new Date();
+      const startOfDay = new Date(now); startOfDay.setHours(sh, sm, 0, 0);
+      const elapsedSinceStart = (now.getTime() - startOfDay.getTime()) / 60000;
+      const scheduledElapsed = route.stops[currentStopIndex]?.expectedTime ?? 0;
+      delayMinutes = Math.round(elapsedSinceStart - scheduledElapsed);
+      // Cap: ignore noise under 2 min, cap at 60 min
+      if (Math.abs(delayMinutes) < 2) delayMinutes = 0;
+      delayMinutes = Math.max(-30, Math.min(60, delayMinutes));
+    }
 
     const stops = [];
     for (let i = 0; i < route.stops.length; i++) {
@@ -49,19 +63,30 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
       if (i < currentStopIndex) {
         stops.push({ ...stop.toObject(), status: 'passed', etaMinutes: 0, etaFormatted: 'Passed', arrivalTime: scheduledArrival(stop.expectedTime), confidence: null });
       } else if (i === currentStopIndex) {
-        stops.push({ ...stop.toObject(), status: 'current', etaMinutes: 0, etaFormatted: 'Here now', arrivalTime: scheduledArrival(stop.expectedTime), confidence: null });
+        stops.push({ ...stop.toObject(), status: 'current', etaMinutes: 0, etaFormatted: 'Here now', arrivalTime: scheduledArrival(stop.expectedTime, delayMinutes), confidence: null });
       } else {
         if (effectiveStatus === 'Active') {
           const pred = await predictETA(bus, stop, route.routeId, route.stops[currentStopIndex].name);
-          stops.push({ ...stop.toObject(), status: 'upcoming', ...pred });
+          // Blend ML prediction with delay offset for arrival clock time
+          const delayedArrival = scheduledArrival(stop.expectedTime, delayMinutes);
+          stops.push({ ...stop.toObject(), status: 'upcoming', ...pred, arrivalTime: delayedArrival });
         } else {
-          // Bus offline — show scheduled times based on startTime
           stops.push({ ...stop.toObject(), status: 'upcoming', etaMinutes: stop.expectedTime, etaFormatted: `+${stop.expectedTime} min`, arrivalTime: scheduledArrival(stop.expectedTime), confidence: 'scheduled' });
         }
       }
     }
 
-    return NextResponse.json({ busNumber: bus.busNumber, routeId: route.routeId, routeName: route.name, currentStop: route.stops[currentStopIndex]?.name, speed: bus.speed, status: effectiveStatus, lastUpdate: bus.lastUpdate, stops });
+    return NextResponse.json({
+      busNumber: bus.busNumber,
+      routeId: route.routeId,
+      routeName: route.name,
+      currentStop: route.stops[currentStopIndex]?.name,
+      speed: bus.speed,
+      status: effectiveStatus,
+      lastUpdate: bus.lastUpdate,
+      delayMinutes,  // exposed so frontend can show "Running X min late/early"
+      stops,
+    });
   } catch (err: any) {
     return NextResponse.json({ message: err.message }, { status: 500 });
   }
