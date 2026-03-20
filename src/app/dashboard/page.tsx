@@ -183,17 +183,38 @@ export default function DashboardPage() {
         <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.85, marginBottom: 4 }}>{greeting}</div>
         <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 2 }}>Hey, {user?.name || 'Student'}</div>
         <div style={{ fontSize: 12, opacity: 0.75 }}>ID: {user?.collegeId || '—'}</div>
-        <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
-          {[
-            { val: pastTickets.length, lbl: 'Journeys' },
-            { val: tickets.length, lbl: 'Tickets' },
-            { val: activeBuses, lbl: 'Live Buses' },
-          ].map(s => (
-            <div key={s.lbl} style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 12, padding: '10px 16px', flex: 1, textAlign: 'center' }}>
-              <div style={{ fontSize: 20, fontWeight: 800 }}>{s.val}</div>
-              <div style={{ fontSize: 10, fontWeight: 600, opacity: 0.8, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.lbl}</div>
+
+        {/* Animated bus scene */}
+        <div style={{ marginTop: 20, borderRadius: 16, overflow: 'hidden', position: 'relative', height: 90, background: 'linear-gradient(180deg, #7dd3fc 0%, #bae6fd 60%, #86efac 60%, #4ade80 100%)' }}>
+          {/* Sun */}
+          <div style={{ position: 'absolute', top: 8, right: 20, width: 22, height: 22, borderRadius: '50%', background: '#fde047', boxShadow: '0 0 10px #fde047' }} />
+          {/* Clouds */}
+          <div style={{ position: 'absolute', top: 10, left: '20%', width: 40, height: 14, borderRadius: 20, background: 'rgba(255,255,255,0.8)' }} />
+          <div style={{ position: 'absolute', top: 6, left: '22%', width: 28, height: 14, borderRadius: 20, background: 'rgba(255,255,255,0.8)' }} />
+          <div style={{ position: 'absolute', top: 12, left: '55%', width: 34, height: 12, borderRadius: 20, background: 'rgba(255,255,255,0.7)' }} />
+          {/* Road */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 28, background: '#374151' }} />
+          {/* Road dashes */}
+          <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, height: 4, display: 'flex', gap: 0, overflow: 'hidden' }}>
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} style={{ width: 30, height: 4, background: '#fbbf24', marginRight: 20, flexShrink: 0 }} />
+            ))}
+          </div>
+          {/* Trees */}
+          {[10, 35, 65, 88].map((left, i) => (
+            <div key={i} style={{ position: 'absolute', bottom: 26, left: `${left}%` }}>
+              <div style={{ width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderBottom: '18px solid #16a34a', margin: '0 auto' }} />
+              <div style={{ width: 5, height: 6, background: '#92400e', margin: '0 auto' }} />
             </div>
           ))}
+          {/* Animated bus */}
+          <style>{`
+            @keyframes busDrive {
+              0%   { left: -80px; }
+              100% { left: 110%; }
+            }
+          `}</style>
+          <div style={{ position: 'absolute', bottom: 24, animation: 'busDrive 5s linear infinite', fontSize: 38, lineHeight: 1 }}>🚌</div>
         </div>
       </div>
 
