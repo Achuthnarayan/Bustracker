@@ -77,6 +77,12 @@ function PaymentForm() {
         order_id: orderData.orderId,
         prefill: { name: user.name || '', email: user.email || '', contact: user.phone || '' },
         theme: { color: '#4F46E5' },
+        method: {
+          upi: true,
+          card: true,
+          netbanking: true,
+          wallet: true,
+        },
         handler: function (response: any) {
           fetch('/api/payment/verify', {
             method: 'POST',
