@@ -112,7 +112,7 @@ export default function DashboardPage() {
               <div style={{ fontSize: 13, color: '#7F1D1D' }}>{alert.message}</div>
             </div>
             <button
-              onClick={() => setDismissedAlerts(prev => new Set([...prev, alert._id]))}
+              onClick={() => setDismissedAlerts(prev => new Set(Array.from(prev).concat(alert._id)))}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 20, lineHeight: 1, padding: 0, flexShrink: 0 }}
             >×</button>
           </div>
