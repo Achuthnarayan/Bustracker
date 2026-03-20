@@ -111,6 +111,11 @@ export default function DashboardPage() {
       const keyRes = await fetch('/api/push/subscribe');
       const { publicKey } = await keyRes.json();
 
+      if (!publicKey) {
+        alert('Push notifications are not configured on the server yet. Please contact the admin.');
+        return;
+      }
+
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey),
