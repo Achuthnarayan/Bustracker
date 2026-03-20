@@ -60,6 +60,9 @@ export default function OperatorDashboard() {
   const [location, setLocation] = useState<any>(null);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [alertMsg, setAlertMsg] = useState('');
+  const [alertLoading, setAlertLoading] = useState(false);
+  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
   const [, forceUpdate] = useState(0);
   const watchRef = useRef<number | null>(null);
   const timerRef = useRef<any>(null);
@@ -70,8 +73,48 @@ export default function OperatorDashboard() {
     if (u) setUser(JSON.parse(u));
     loadAssignment();
     timerRef.current = setInterval(() => forceUpdate(n => n + 1), 30000);
+    loadMyAlerts();
     return () => { stopGPS(); clearInterval(timerRef.current); };
   }, []);
+
+  async function loadMyAlerts() {
+    try {
+      const res = await fetch('/api/alerts', { headers: { Authorization: `Bearer ${getToken()}` } });
+      if (res.ok) {
+        const data = await res.json();
+        setActiveAlerts(data.alerts.filter((a: any) => a.active));
+      }
+    } catch {}
+  }
+
+  async function sendAlert() {
+    if (!alertMsg.trim()) return;
+    setAlertLoading(true);
+    try {
+      const res = await fetch('/api/alerts', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: alertMsg }),
+      });
+      if (!res.ok) throw new Error((await res.json()).message);
+      setAlertMsg('');
+      setToast({ msg: 'Emergency alert sent to all users', type: 'success' });
+      loadMyAlerts();
+    } catch (err: any) {
+      setToast({ msg: err.message || 'Failed to send alert', type: 'error' });
+    } finally { setAlertLoading(false); }
+  }
+
+  async function dismissAlert(alertId: string) {
+    try {
+      await fetch('/api/alerts', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alertId }),
+      });
+      setActiveAlerts(prev => prev.filter((a: any) => a._id !== alertId));
+    } catch {}
+  }
 
   async function loadAssignment() {
     try {
@@ -252,6 +295,49 @@ export default function OperatorDashboard() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* ── Emergency Alert ─────────────────────────────────── */}
+        <p className="sec-label" style={{ marginTop: 28 }}>Emergency Alert</p>
+        <div style={{ background: '#FFF7ED', border: '1.5px solid #FED7AA', borderRadius: 16, padding: 20, marginBottom: 20 }}>
+          <div style={{ fontSize: 13, color: '#92400E', fontWeight: 600, marginBottom: 12 }}>
+            🚨 Send an emergency message to all passengers
+          </div>
+          <textarea
+            value={alertMsg}
+            onChange={e => setAlertMsg(e.target.value)}
+            placeholder="e.g. Bus breakdown near Edapally, expect 20 min delay..."
+            rows={3}
+            style={{
+              width: '100%', borderRadius: 10, border: '1.5px solid #FED7AA',
+              padding: '10px 12px', fontSize: 13, resize: 'none',
+              background: '#fff', color: '#1a1a1a', outline: 'none',
+              boxSizing: 'border-box', marginBottom: 12,
+            }}
+          />
+          <button
+            className="btn"
+            disabled={alertLoading || !alertMsg.trim()}
+            onClick={sendAlert}
+            style={{ background: '#DC2626', color: '#fff', fontSize: 13, width: '100%' }}
+          >
+            {alertLoading ? <><span className="spinner" /> Sending...</> : '🚨 Send Emergency Alert'}
+          </button>
+        </div>
+
+        {/* Active alerts sent by this operator */}
+        {activeAlerts.length > 0 && (
+          <>
+            <p className="sec-label">Active Alerts</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+              {activeAlerts.map((a: any) => (
+                <div key={a._id} style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+                  <div style={{ fontSize: 13, color: '#991B1B', flex: 1 }}>{a.message}</div>
+                  <button onClick={() => dismissAlert(a._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         <button className="btn btn-secondary" onClick={logout}>Logout</button>

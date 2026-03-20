@@ -19,6 +19,8 @@ export default function DashboardPage() {
   const [buses, setBuses] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
 
   const hr = new Date().getHours();
   const greeting = hr < 12 ? 'Good morning ☀️' : hr < 17 ? 'Good afternoon 👋' : 'Good evening 🌙';
@@ -28,7 +30,9 @@ export default function DashboardPage() {
     if (u) setUser(JSON.parse(u));
     loadAll();
     const interval = setInterval(loadBuses, 5000);
-    return () => clearInterval(interval);
+    const alertInterval = setInterval(loadAlerts, 10000);
+    loadAlerts();
+    return () => { clearInterval(interval); clearInterval(alertInterval); };
   }, []);
 
   async function loadAll() {
@@ -49,6 +53,14 @@ export default function DashboardPage() {
       const res = await fetch('/api/tickets', { headers: { Authorization: `Bearer ${getToken()}` } });
       const data = await res.json();
       setTickets(data.tickets || []);
+    } catch {}
+  }
+
+  async function loadAlerts() {
+    try {
+      const res = await fetch('/api/alerts', { headers: { Authorization: `Bearer ${getToken()}` } });
+      const data = await res.json();
+      setAlerts(data.alerts || []);
     } catch {}
   }
 
@@ -84,6 +96,27 @@ export default function DashboardPage() {
       </div>
 
       <div style={{ background: 'var(--bg)', padding: '20px 16px 40px', flex: 1 }}>
+
+        {/* Emergency Alerts */}
+        {alerts.filter(a => !dismissedAlerts.has(a._id)).map((alert: any) => (
+          <div key={alert._id} style={{
+            background: '#FEF2F2', border: '1.5px solid #FCA5A5', borderRadius: 14,
+            padding: '12px 14px', marginBottom: 12,
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+          }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>🚨</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#991B1B', marginBottom: 2 }}>
+                Emergency Alert · Bus {alert.busNumber}
+              </div>
+              <div style={{ fontSize: 13, color: '#7F1D1D' }}>{alert.message}</div>
+            </div>
+            <button
+              onClick={() => setDismissedAlerts(prev => new Set([...prev, alert._id]))}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 20, lineHeight: 1, padding: 0, flexShrink: 0 }}
+            >×</button>
+          </div>
+        ))}
 
         {/* Quick Actions */}
         <p className="sec-label">Quick Actions</p>

@@ -80,9 +80,19 @@ const tripHistorySchema = new Schema({
 });
 tripHistorySchema.index({ routeId: 1, fromStop: 1, toStop: 1, hourOfDay: 1 });
 
+// ── Alert ─────────────────────────────────────────────────────────────────────
+const alertSchema = new Schema({
+  message:    { type: String, required: true },
+  busNumber:  { type: String, required: true },
+  operatorId: { type: String, required: true },
+  active:     { type: Boolean, default: true },
+  expiresAt:  { type: Date, default: () => new Date(Date.now() + 2 * 60 * 60 * 1000) }, // 2hr TTL
+}, { timestamps: true });
+
 export const User       = mongoose.models.User       || mongoose.model('User', userSchema);
 export const Operator   = mongoose.models.Operator   || mongoose.model('Operator', operatorSchema);
 export const Bus        = mongoose.models.Bus        || mongoose.model('Bus', busSchema);
 export const Route      = mongoose.models.Route      || mongoose.model('Route', routeSchema);
 export const Ticket     = mongoose.models.Ticket     || mongoose.model('Ticket', ticketSchema);
 export const TripHistory= mongoose.models.TripHistory|| mongoose.model('TripHistory', tripHistorySchema);
+export const Alert      = mongoose.models.Alert      || mongoose.model('Alert', alertSchema);
