@@ -80,6 +80,15 @@ const tripHistorySchema = new Schema({
 });
 tripHistorySchema.index({ routeId: 1, fromStop: 1, toStop: 1, hourOfDay: 1 });
 
+// ── PushSubscription ──────────────────────────────────────────────────────────
+const pushSubscriptionSchema = new Schema({
+  userId:       { type: String, required: true, unique: true },
+  subscription: { type: Object, required: true }, // web push subscription object
+  routeId:      { type: String },                 // user's bus route
+  notifyBefore: { type: Number, default: 10 },    // minutes before arrival
+  notifiedAt:   { type: Date },                   // last notification sent (debounce)
+}, { timestamps: true });
+
 // ── Alert ─────────────────────────────────────────────────────────────────────
 const alertSchema = new Schema({
   message:    { type: String, required: true },
@@ -96,3 +105,4 @@ export const Route      = mongoose.models.Route      || mongoose.model('Route', 
 export const Ticket     = mongoose.models.Ticket     || mongoose.model('Ticket', ticketSchema);
 export const TripHistory= mongoose.models.TripHistory|| mongoose.model('TripHistory', tripHistorySchema);
 export const Alert      = mongoose.models.Alert      || mongoose.model('Alert', alertSchema);
+export const PushSub    = mongoose.models.PushSub    || mongoose.model('PushSub', pushSubscriptionSchema);

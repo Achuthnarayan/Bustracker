@@ -21,6 +21,11 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [routes, setRoutes] = useState<any[]>([]);
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [notifBefore, setNotifBefore] = useState(10);
+  const [notifRoute, setNotifRoute] = useState('');
+  const [notifLoading, setNotifLoading] = useState(false);
 
   const hr = new Date().getHours();
   const greeting = hr < 12 ? 'Good morning ☀️' : hr < 17 ? 'Good afternoon 👋' : 'Good evening 🌙';
@@ -32,6 +37,8 @@ export default function DashboardPage() {
     const interval = setInterval(loadBuses, 5000);
     const alertInterval = setInterval(loadAlerts, 10000);
     loadAlerts();
+    loadRoutes();
+    checkNotifStatus();
     return () => { clearInterval(interval); clearInterval(alertInterval); };
   }, []);
 
@@ -62,6 +69,96 @@ export default function DashboardPage() {
       const data = await res.json();
       setAlerts(data.alerts || []);
     } catch {}
+  }
+
+  async function loadRoutes() {
+    try {
+      const res = await fetch('/api/routes', { headers: { Authorization: `Bearer ${getToken()}` } });
+      const data = await res.json();
+      setRoutes(data.routes || []);
+    } catch {}
+  }
+
+  function checkNotifStatus() {
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    const saved = localStorage.getItem('push_notif_prefs');
+    if (saved) {
+      const prefs = JSON.parse(saved);
+      setNotifEnabled(prefs.enabled || false);
+      setNotifBefore(prefs.notifyBefore || 10);
+      setNotifRoute(prefs.routeId || '');
+    }
+  }
+
+  async function registerServiceWorker() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    return reg;
+  }
+
+  async function enableNotifications() {
+    setNotifLoading(true);
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        alert('Please allow notifications in your browser settings.');
+        return;
+      }
+      const reg = await registerServiceWorker();
+      if (!reg) { alert('Push notifications not supported in this browser.'); return; }
+
+      const keyRes = await fetch('/api/push/subscribe');
+      const { publicKey } = await keyRes.json();
+
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      });
+
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: sub.toJSON(), routeId: notifRoute, notifyBefore: notifBefore }),
+      });
+
+      localStorage.setItem('push_notif_prefs', JSON.stringify({ enabled: true, notifyBefore: notifBefore, routeId: notifRoute }));
+      setNotifEnabled(true);
+    } catch (err: any) {
+      alert('Failed to enable notifications: ' + err.message);
+    } finally { setNotifLoading(false); }
+  }
+
+  async function disableNotifications() {
+    setNotifLoading(true);
+    try {
+      await fetch('/api/push/subscribe', { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } });
+      localStorage.removeItem('push_notif_prefs');
+      setNotifEnabled(false);
+    } catch {} finally { setNotifLoading(false); }
+  }
+
+  async function updateNotifPrefs() {
+    setNotifLoading(true);
+    try {
+      const reg = await registerServiceWorker();
+      if (!reg) return;
+      const sub = await reg.pushManager.getSubscription();
+      if (!sub) { await enableNotifications(); return; }
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: sub.toJSON(), routeId: notifRoute, notifyBefore: notifBefore }),
+      });
+      localStorage.setItem('push_notif_prefs', JSON.stringify({ enabled: true, notifyBefore: notifBefore, routeId: notifRoute }));
+    } catch {} finally { setNotifLoading(false); }
+  }
+
+  function urlBase64ToUint8Array(base64String: string) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    return Uint8Array.from(Array.from(rawData).map(c => c.charCodeAt(0)));
   }
 
   const activeBuses = buses.filter(b => b.status === 'Active').length;
@@ -205,6 +302,64 @@ export default function DashboardPage() {
             </Link>
           );
         })}
+
+        {/* Bus Arrival Notifications */}
+        <p className="sec-label" style={{ marginTop: 24 }}>Bus Arrival Notifications</p>
+        <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 24 }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+            Get notified on your phone when your bus is approaching your stop.
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Your Route</label>
+            <select
+              value={notifRoute}
+              onChange={e => setNotifRoute(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 13, background: '#fff' }}
+            >
+              <option value="">Select your bus route</option>
+              {routes.map((r: any) => (
+                <option key={r.routeId} value={r.routeId}>{r.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>
+              Notify me <strong style={{ color: 'var(--accent)' }}>{notifBefore} minutes</strong> before bus arrives
+            </label>
+            <input
+              type="range" min={5} max={30} step={5}
+              value={notifBefore}
+              onChange={e => setNotifBefore(Number(e.target.value))}
+              style={{ width: '100%', accentColor: 'var(--accent)' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+              <span>5 min</span><span>10</span><span>15</span><span>20</span><span>25</span><span>30 min</span>
+            </div>
+          </div>
+
+          {notifEnabled ? (
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn btn-primary" style={{ flex: 1, fontSize: 13 }} disabled={notifLoading} onClick={updateNotifPrefs}>
+                {notifLoading ? 'Saving...' : '💾 Save Preferences'}
+              </button>
+              <button className="btn btn-secondary" style={{ fontSize: 13 }} disabled={notifLoading} onClick={disableNotifications}>
+                Turn Off
+              </button>
+            </div>
+          ) : (
+            <button className="btn btn-primary" style={{ width: '100%', fontSize: 13 }} disabled={notifLoading || !notifRoute} onClick={enableNotifications}>
+              {notifLoading ? 'Enabling...' : '🔔 Enable Notifications'}
+            </button>
+          )}
+
+          {notifEnabled && (
+            <div style={{ marginTop: 12, background: '#F0FDF4', border: '1px solid #A7F3D0', borderRadius: 10, padding: '8px 12px', fontSize: 12, color: '#065F46' }}>
+              ✓ Notifications active — you'll be alerted {notifBefore} min before your bus arrives
+            </div>
+          )}
+        </div>
 
         {/* Journey History */}
         <p className="sec-label" style={{ marginTop: 24 }}>Previous Journeys</p>
