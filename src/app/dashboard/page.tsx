@@ -222,7 +222,7 @@ export default function DashboardPage() {
 
         {/* Quick Actions */}
         <p className="sec-label">Quick Actions</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 24 }}>
           {[
             { href: '/live-track', icon: '🗺️', label: 'Live Track', primary: true },
             { href: '/routes',     icon: '🚌', label: 'Routes' },
@@ -242,6 +242,27 @@ export default function DashboardPage() {
               <span style={{ fontSize: 11, fontWeight: 700 }}>{item.label}</span>
             </Link>
           ))}
+        </div>
+
+        {/* Bus Banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
+          borderRadius: 18, padding: '18px 20px', marginBottom: 24,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          overflow: 'hidden', position: 'relative',
+        }}>
+          <div style={{ position: 'absolute', right: -10, top: -10, fontSize: 80, opacity: 0.15, transform: 'scaleX(-1)' }}>🚌</div>
+          <div style={{ position: 'absolute', right: 60, bottom: -14, fontSize: 50, opacity: 0.1 }}>🚌</div>
+          <div style={{ zIndex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 4 }}>SSET Campus Bus</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginBottom: 12 }}>Safe · On-time · Tracked live</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {['7 Routes', 'Live GPS', 'Push Alerts'].map(tag => (
+                <span key={tag} style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: '4px 10px', fontSize: 11, color: '#fff', fontWeight: 600 }}>{tag}</span>
+              ))}
+            </div>
+          </div>
+          <div style={{ fontSize: 52, zIndex: 1, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }}>🚍</div>
         </div>
 
         {/* Active Ticket */}
