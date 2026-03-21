@@ -85,16 +85,15 @@ export default function RoutesPage() {
               <div style={{ flex: 1, background: '#EFF6FF', borderRadius: 10, padding: '8px 12px', fontSize: 12 }}>
                 <div style={{ fontWeight: 700, color: '#1e40af', marginBottom: 2 }}>🌅 Morning</div>
                 <div style={{ color: '#1e3a8a' }}>Departs <strong>{route.startTime}</strong></div>
-                <div style={{ color: '#1e3a8a' }}>Arrives SSET <strong>08:40</strong></div>
+                <div style={{ color: '#1e3a8a' }}>Arrives SSET <strong>08:35</strong></div>
               </div>
               <div style={{ flex: 1, background: '#F0FDF4', borderRadius: 10, padding: '8px 12px', fontSize: 12 }}>
                 <div style={{ fontWeight: 700, color: '#065F46', marginBottom: 2 }}>🌆 Evening</div>
                 <div style={{ color: '#065F46' }}>Departs SSET <strong>16:00</strong></div>
                 <div style={{ color: '#065F46' }}>Arrives <strong>~{(() => {
-                  const [sh, sm] = (route.startTime || '08:05').split(':').map(Number);
                   const totalMins = 16 * 60 + route.totalDuration;
                   return `${String(Math.floor(totalMins / 60) % 24).padStart(2,'0')}:${String(totalMins % 60).padStart(2,'0')}`;
-                })()}</strong></div>
+                })()}</strong> at {route.stops?.[0]?.name || 'first stop'}</div>
               </div>
             </div>
 
