@@ -184,37 +184,89 @@ export default function DashboardPage() {
         <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 2 }}>Hey, {user?.name || 'Student'}</div>
         <div style={{ fontSize: 12, opacity: 0.75 }}>ID: {user?.collegeId || '—'}</div>
 
-        {/* Animated bus scene */}
-        <div style={{ marginTop: 20, borderRadius: 16, overflow: 'hidden', position: 'relative', height: 90, background: 'linear-gradient(180deg, #7dd3fc 0%, #bae6fd 60%, #86efac 60%, #4ade80 100%)' }}>
-          {/* Sun */}
-          <div style={{ position: 'absolute', top: 8, right: 20, width: 22, height: 22, borderRadius: '50%', background: '#fde047', boxShadow: '0 0 10px #fde047' }} />
-          {/* Clouds */}
-          <div style={{ position: 'absolute', top: 10, left: '20%', width: 40, height: 14, borderRadius: 20, background: 'rgba(255,255,255,0.8)' }} />
-          <div style={{ position: 'absolute', top: 6, left: '22%', width: 28, height: 14, borderRadius: 20, background: 'rgba(255,255,255,0.8)' }} />
-          <div style={{ position: 'absolute', top: 12, left: '55%', width: 34, height: 12, borderRadius: 20, background: 'rgba(255,255,255,0.7)' }} />
+        {/* Animated top-view bus scene */}
+        <div style={{ marginTop: 20, borderRadius: 16, overflow: 'hidden', position: 'relative', height: 110, background: '#4ade80' }}>
+          <style>{`
+            @keyframes busMove { 0% { transform: translateX(-120px); } 100% { transform: translateX(calc(100vw + 120px)); } }
+            @keyframes dashMove { 0% { transform: translateX(0); } 100% { transform: translateX(-60px); } }
+            @keyframes treeSway { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+          `}</style>
+
+          {/* Grass */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #4ade80 0%, #22c55e 100%)' }} />
+
           {/* Road */}
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 28, background: '#374151' }} />
-          {/* Road dashes */}
-          <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, height: 4, display: 'flex', gap: 0, overflow: 'hidden' }}>
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} style={{ width: 30, height: 4, background: '#fbbf24', marginRight: 20, flexShrink: 0 }} />
-            ))}
+          <div style={{ position: 'absolute', top: 28, left: 0, right: 0, height: 54, background: '#374151' }} />
+
+          {/* Road edge lines */}
+          <div style={{ position: 'absolute', top: 28, left: 0, right: 0, height: 3, background: '#f9fafb' }} />
+          <div style={{ position: 'absolute', top: 79, left: 0, right: 0, height: 3, background: '#f9fafb' }} />
+
+          {/* Animated center dashes */}
+          <div style={{ position: 'absolute', top: 52, left: 0, right: 0, height: 4, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', gap: 0, animation: 'dashMove 0.6s linear infinite', width: '200%' }}>
+              {Array.from({ length: 30 }).map((_, i) => (
+                <div key={i} style={{ width: 30, height: 4, background: '#fbbf24', marginRight: 30, flexShrink: 0 }} />
+              ))}
+            </div>
           </div>
-          {/* Trees */}
-          {[10, 35, 65, 88].map((left, i) => (
-            <div key={i} style={{ position: 'absolute', bottom: 26, left: `${left}%` }}>
-              <div style={{ width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderBottom: '18px solid #16a34a', margin: '0 auto' }} />
-              <div style={{ width: 5, height: 6, background: '#92400e', margin: '0 auto' }} />
+
+          {/* Trees top row */}
+          {[5, 18, 32, 46, 60, 74, 88].map((left, i) => (
+            <div key={i} style={{ position: 'absolute', top: 4, left: `${left}%`, animation: 'treeSway 3s ease-in-out infinite', animationDelay: `${i * 0.4}s` }}>
+              <svg width="18" height="18" viewBox="0 0 18 18">
+                <circle cx="9" cy="9" r="8" fill="#15803d" />
+                <circle cx="6" cy="7" r="4" fill="#16a34a" />
+                <circle cx="12" cy="7" r="4" fill="#16a34a" />
+                <circle cx="9" cy="5" r="4" fill="#22c55e" />
+              </svg>
             </div>
           ))}
-          {/* Animated bus */}
-          <style>{`
-            @keyframes busDrive {
-              0%   { left: -80px; }
-              100% { left: 110%; }
-            }
-          `}</style>
-          <div style={{ position: 'absolute', bottom: 24, animation: 'busDrive 5s linear infinite', fontSize: 38, lineHeight: 1 }}>🚌</div>
+
+          {/* Trees bottom row */}
+          {[10, 25, 40, 55, 70, 85].map((left, i) => (
+            <div key={i} style={{ position: 'absolute', bottom: 4, left: `${left}%`, animation: 'treeSway 3s ease-in-out infinite', animationDelay: `${i * 0.5}s` }}>
+              <svg width="18" height="18" viewBox="0 0 18 18">
+                <circle cx="9" cy="9" r="8" fill="#15803d" />
+                <circle cx="6" cy="7" r="4" fill="#16a34a" />
+                <circle cx="12" cy="7" r="4" fill="#16a34a" />
+                <circle cx="9" cy="5" r="4" fill="#22c55e" />
+              </svg>
+            </div>
+          ))}
+
+          {/* Top-view bus SVG */}
+          <div style={{ position: 'absolute', top: 30, animation: 'busMove 4s linear infinite' }}>
+            <svg width="52" height="50" viewBox="0 0 52 50" fill="none">
+              {/* Body */}
+              <rect x="4" y="2" width="44" height="46" rx="6" fill="#FBBF24" />
+              {/* Roof shade */}
+              <rect x="8" y="6" width="36" height="38" rx="4" fill="#FDE68A" />
+              {/* Front windshield */}
+              <rect x="10" y="6" width="32" height="10" rx="3" fill="#93C5FD" opacity="0.9" />
+              {/* Rear window */}
+              <rect x="10" y="34" width="32" height="8" rx="3" fill="#93C5FD" opacity="0.7" />
+              {/* Left windows */}
+              <rect x="4" y="16" width="6" height="7" rx="2" fill="#93C5FD" opacity="0.8" />
+              <rect x="4" y="26" width="6" height="7" rx="2" fill="#93C5FD" opacity="0.8" />
+              {/* Right windows */}
+              <rect x="42" y="16" width="6" height="7" rx="2" fill="#93C5FD" opacity="0.8" />
+              <rect x="42" y="26" width="6" height="7" rx="2" fill="#93C5FD" opacity="0.8" />
+              {/* Front headlights */}
+              <circle cx="13" cy="7" r="3" fill="#FEF9C3" />
+              <circle cx="39" cy="7" r="3" fill="#FEF9C3" />
+              {/* Rear lights */}
+              <circle cx="13" cy="43" r="3" fill="#FCA5A5" />
+              <circle cx="39" cy="43" r="3" fill="#FCA5A5" />
+              {/* Center stripe */}
+              <rect x="23" y="6" width="6" height="38" rx="2" fill="#F59E0B" opacity="0.4" />
+              {/* Wheels */}
+              <rect x="1" y="10" width="5" height="8" rx="2" fill="#1F2937" />
+              <rect x="1" y="32" width="5" height="8" rx="2" fill="#1F2937" />
+              <rect x="46" y="10" width="5" height="8" rx="2" fill="#1F2937" />
+              <rect x="46" y="32" width="5" height="8" rx="2" fill="#1F2937" />
+            </svg>
+          </div>
         </div>
       </div>
 
@@ -410,7 +462,113 @@ export default function DashboardPage() {
         {/* Journey History */}
         <p className="sec-label" style={{ marginTop: 24 }}>Previous Journeys</p>
         {pastTickets.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 20, color: '#94A3B8', fontSize: 13 }}>No past journeys yet</div>
+          <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 18, overflow: 'hidden', marginBottom: 10 }}>
+            <style>{`
+              @keyframes bus1race { 0% { left: -80px; } 100% { left: calc(100% + 20px); } }
+              @keyframes bus2race { 0% { left: -80px; } 100% { left: calc(100% + 20px); } }
+              @keyframes bus3race { 0% { left: -80px; } 100% { left: calc(100% + 20px); } }
+              @keyframes trackDash { 0% { transform: translateX(0); } 100% { transform: translateX(-80px); } }
+              @keyframes crowd { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+            `}</style>
+
+            {/* Sky */}
+            <div style={{ background: 'linear-gradient(180deg,#bfdbfe 0%,#dbeafe 100%)', padding: '12px 0 0', position: 'relative', height: 180, overflow: 'hidden' }}>
+
+              {/* Clouds */}
+              <div style={{ position: 'absolute', top: 10, left: '15%', background: '#fff', borderRadius: 20, width: 60, height: 18, opacity: 0.85 }} />
+              <div style={{ position: 'absolute', top: 6, left: '17%', background: '#fff', borderRadius: 20, width: 40, height: 14, opacity: 0.85 }} />
+              <div style={{ position: 'absolute', top: 12, left: '55%', background: '#fff', borderRadius: 20, width: 70, height: 18, opacity: 0.8 }} />
+              <div style={{ position: 'absolute', top: 8, left: '57%', background: '#fff', borderRadius: 20, width: 45, height: 14, opacity: 0.8 }} />
+
+              {/* Crowd / flags */}
+              {[8,16,24,32,40,48,56,64,72,80,88].map((l,i) => (
+                <div key={i} style={{ position: 'absolute', top: 28, left: `${l}%`, animation: `crowd 0.6s ease-in-out infinite`, animationDelay: `${i*0.1}s` }}>
+                  <div style={{ width: 6, height: 14, background: ['#ef4444','#3b82f6','#22c55e','#f59e0b'][i%4], borderRadius: 2 }} />
+                </div>
+              ))}
+
+              {/* Ground / grass strip */}
+              <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, height: 12, background: '#4ade80' }} />
+
+              {/* Track background */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 62, background: '#374151' }} />
+
+              {/* Lane dividers */}
+              <div style={{ position: 'absolute', bottom: 40, left: 0, right: 0, height: 2, background: '#6b7280' }} />
+              <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, height: 2, background: '#6b7280' }} />
+
+              {/* Animated dashes lane 1 */}
+              <div style={{ position: 'absolute', bottom: 50, left: 0, right: 0, height: 3, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', animation: 'trackDash 0.5s linear infinite', width: '200%' }}>
+                  {Array.from({length: 20}).map((_,i) => <div key={i} style={{ width: 40, height: 3, background: '#fbbf24', marginRight: 40, flexShrink: 0 }} />)}
+                </div>
+              </div>
+              {/* Animated dashes lane 2 */}
+              <div style={{ position: 'absolute', bottom: 30, left: 0, right: 0, height: 3, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', animation: 'trackDash 0.4s linear infinite', width: '200%' }}>
+                  {Array.from({length: 20}).map((_,i) => <div key={i} style={{ width: 40, height: 3, background: '#fbbf24', marginRight: 40, flexShrink: 0 }} />)}
+                </div>
+              </div>
+              {/* Animated dashes lane 3 */}
+              <div style={{ position: 'absolute', bottom: 10, left: 0, right: 0, height: 3, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', animation: 'trackDash 0.6s linear infinite', width: '200%' }}>
+                  {Array.from({length: 20}).map((_,i) => <div key={i} style={{ width: 40, height: 3, background: '#fbbf24', marginRight: 40, flexShrink: 0 }} />)}
+                </div>
+              </div>
+
+              {/* Bus 1 — fastest, top lane */}
+              <div style={{ position: 'absolute', bottom: 44, animation: 'bus1race 2.2s linear infinite' }}>
+                <svg width="48" height="22" viewBox="0 0 48 22" fill="none">
+                  <rect x="2" y="2" width="44" height="18" rx="4" fill="#FBBF24"/>
+                  <rect x="5" y="4" width="38" height="12" rx="3" fill="#FDE68A"/>
+                  <rect x="5" y="4" width="14" height="8" rx="2" fill="#93C5FD" opacity="0.9"/>
+                  <rect x="29" y="4" width="14" height="8" rx="2" fill="#93C5FD" opacity="0.7"/>
+                  <circle cx="10" cy="20" r="3" fill="#1F2937"/><circle cx="38" cy="20" r="3" fill="#1F2937"/>
+                  <circle cx="10" cy="2" r="3" fill="#1F2937"/><circle cx="38" cy="2" r="3" fill="#1F2937"/>
+                  <circle cx="44" cy="8" r="2" fill="#FEF9C3"/><circle cx="44" cy="14" r="2" fill="#FCA5A5"/>
+                  <text x="14" y="13" fontSize="6" fill="#1e3a8a" fontWeight="bold">BUS 1</text>
+                </svg>
+              </div>
+
+              {/* Bus 2 — medium, middle lane */}
+              <div style={{ position: 'absolute', bottom: 22, animation: 'bus2race 2.8s linear infinite', animationDelay: '0.4s' }}>
+                <svg width="48" height="22" viewBox="0 0 48 22" fill="none">
+                  <rect x="2" y="2" width="44" height="18" rx="4" fill="#60A5FA"/>
+                  <rect x="5" y="4" width="38" height="12" rx="3" fill="#BFDBFE"/>
+                  <rect x="5" y="4" width="14" height="8" rx="2" fill="#93C5FD" opacity="0.9"/>
+                  <rect x="29" y="4" width="14" height="8" rx="2" fill="#93C5FD" opacity="0.7"/>
+                  <circle cx="10" cy="20" r="3" fill="#1F2937"/><circle cx="38" cy="20" r="3" fill="#1F2937"/>
+                  <circle cx="10" cy="2" r="3" fill="#1F2937"/><circle cx="38" cy="2" r="3" fill="#1F2937"/>
+                  <circle cx="44" cy="8" r="2" fill="#FEF9C3"/><circle cx="44" cy="14" r="2" fill="#FCA5A5"/>
+                  <text x="14" y="13" fontSize="6" fill="#1e3a8a" fontWeight="bold">BUS 2</text>
+                </svg>
+              </div>
+
+              {/* Bus 3 — slowest, bottom lane */}
+              <div style={{ position: 'absolute', bottom: 2, animation: 'bus3race 3.5s linear infinite', animationDelay: '1s' }}>
+                <svg width="48" height="22" viewBox="0 0 48 22" fill="none">
+                  <rect x="2" y="2" width="44" height="18" rx="4" fill="#34D399"/>
+                  <rect x="5" y="4" width="38" height="12" rx="3" fill="#A7F3D0"/>
+                  <rect x="5" y="4" width="14" height="8" rx="2" fill="#93C5FD" opacity="0.9"/>
+                  <rect x="29" y="4" width="14" height="8" rx="2" fill="#93C5FD" opacity="0.7"/>
+                  <circle cx="10" cy="20" r="3" fill="#1F2937"/><circle cx="38" cy="20" r="3" fill="#1F2937"/>
+                  <circle cx="10" cy="2" r="3" fill="#1F2937"/><circle cx="38" cy="2" r="3" fill="#1F2937"/>
+                  <circle cx="44" cy="8" r="2" fill="#FEF9C3"/><circle cx="44" cy="14" r="2" fill="#FCA5A5"/>
+                  <text x="14" y="13" fontSize="6" fill="#065f46" fontWeight="bold">BUS 3</text>
+                </svg>
+              </div>
+
+              {/* Finish flag */}
+              <div style={{ position: 'absolute', right: 16, bottom: 0, top: 40, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ width: 2, height: '100%', background: '#fff', opacity: 0.6 }} />
+                <div style={{ position: 'absolute', top: 0, right: 0, width: 20, height: 14, background: 'repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0 0 / 7px 7px' }} />
+              </div>
+            </div>
+
+            <div style={{ padding: '12px 16px', textAlign: 'center', color: '#64748b', fontSize: 13 }}>
+              No past journeys yet — book your first ride! 🏁
+            </div>
+          </div>
         ) : pastTickets.map((t, i) => {
           const done = ['used', 'completed'].includes((t.status || '').toLowerCase());
           const date = t.purchaseDate ? new Date(t.purchaseDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
