@@ -127,11 +127,29 @@ export default function LiveTrackMap() {
     });
   }
 
+  // Fetch road-following geometry from OSRM for a list of stops
+  async function fetchRoadPolyline(stops: any[]): Promise<[number, number][]> {
+    try {
+      const coords = stops.map((s: any) => `${s.longitude},${s.latitude}`).join(';');
+      const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.code === 'Ok' && data.routes?.[0]?.geometry?.coordinates) {
+        return data.routes[0].geometry.coordinates.map(([lng, lat]: [number, number]) => [lat, lng]);
+      }
+    } catch {}
+    // fallback: straight lines
+    return stops.map((s: any) => [s.latitude, s.longitude]);
+  }
+
   async function loadRoutes(L: any) {
     try {
       const res  = await fetch('/api/routes', { headers: { Authorization: `Bearer ${getToken()}` } });
       const data = await res.json();
-      const routeList: any[] = data.routes || [];
+      // Only show first 3 routes
+      const routeList: any[] = (data.routes || []).filter((r: any) =>
+        ['ROUTE_1', 'ROUTE_2', 'ROUTE_3'].includes(r.routeId)
+      );
       setRoutes(routeList);
 
       polylinesRef.current.forEach(p => p.remove());
@@ -139,13 +157,14 @@ export default function LiveTrackMap() {
       polylinesRef.current  = [];
       stopMarkersRef.current = [];
 
-      routeList.forEach(route => {
+      for (const route of routeList) {
         const color = ROUTE_COLORS[route.routeId] || DEFAULT_COLOR;
         const stops: any[] = (route.stops || []).sort((a: any, b: any) => a.order - b.order);
-        if (stops.length < 2) return;
+        if (stops.length < 2) continue;
 
-        const latlngs = stops.map((s: any) => [s.latitude, s.longitude]);
-        const line = L.polyline(latlngs, { color, weight: 4, opacity: 0.85 }).addTo(mapRef.current);
+        // Get road-following polyline from OSRM
+        const latlngs = await fetchRoadPolyline(stops);
+        const line = L.polyline(latlngs, { color, weight: 5, opacity: 0.9 }).addTo(mapRef.current);
         polylinesRef.current.push(line);
 
         stops.forEach((stop: any, idx: number) => {
@@ -160,7 +179,7 @@ export default function LiveTrackMap() {
           marker.on('click', () => handleStopClick(stop, route));
           stopMarkersRef.current.push(marker);
         });
-      });
+      }
     } catch {}
   }
 
