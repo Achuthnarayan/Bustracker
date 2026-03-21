@@ -9,7 +9,7 @@ const ROUTES = [
     routeId: 'ROUTE_1',
     name: 'Route 1 – North Paravur → SCMS',
     description: 'North Paravur · Vedimara · Mannam · Manakapady · Thatampady · Karumaloor · Kottapuram · Malikampeedika · UC College · Paravur Kavala · SCMS',
-    startTime: '08:00', eveningStartTime: '16:00', duration: '50 mins', totalDuration: 50, price: 25, active: true,
+    startTime: '07:45', eveningStartTime: '16:00', duration: '50 mins', totalDuration: 50, price: 25, active: true,
     stops: [
       { name: 'North Paravur',                             order: 1,  expectedTime: 0,  latitude: 10.1405, longitude: 76.2305 },
       { name: 'Vedimara',                                  order: 2,  expectedTime: 5,  latitude: 10.1467, longitude: 76.2512 },
@@ -28,7 +28,7 @@ const ROUTES = [
     routeId: 'ROUTE_2',
     name: 'Route 2 – Kaloor → SCMS',
     description: 'Kaloor · Palarivattom · Edapally · Kalamassery · Aluva · Angamaly · SCMS',
-    startTime: '07:30', eveningStartTime: '16:00', duration: '75 mins', totalDuration: 75, price: 40, active: true,
+    startTime: '07:20', eveningStartTime: '16:00', duration: '75 mins', totalDuration: 75, price: 40, active: true,
     stops: [
       { name: 'Kaloor',                                   order: 1, expectedTime: 0,  latitude: 9.9986,  longitude: 76.2978 },
       { name: 'Palarivattom',                             order: 2, expectedTime: 10, latitude: 9.9985,  longitude: 76.3119 },
@@ -43,7 +43,7 @@ const ROUTES = [
     routeId: 'ROUTE_3',
     name: 'Route 3 – Thrissur → SCMS',
     description: 'Thrissur · Pudukkad · Kodakara · Perambra · Chalakudy · Koratty · SCMS',
-    startTime: '07:10', eveningStartTime: '16:00', duration: '95 mins', totalDuration: 95, price: 55, active: true,
+    startTime: '07:00', eveningStartTime: '16:00', duration: '95 mins', totalDuration: 95, price: 55, active: true,
     stops: [
       { name: 'Thrissur',                                  order: 1, expectedTime: 0,  latitude: 10.5276, longitude: 76.2144 },
       { name: 'Pudukkad',                                  order: 2, expectedTime: 18, latitude: 10.4167, longitude: 76.2833 },
@@ -58,7 +58,7 @@ const ROUTES = [
     routeId: 'ROUTE_4',
     name: 'Route 4 – Perumbavoor → SSET',
     description: 'Perumbavoor · Kuruppampady · Kalady · Mattoor · Angamaly · Karukutty · SSET',
-    startTime: '07:30', eveningStartTime: '16:00', duration: '70 mins', totalDuration: 70, price: 50, active: true,
+    startTime: '07:25', eveningStartTime: '16:00', duration: '70 mins', totalDuration: 70, price: 50, active: true,
     stops: [
       { name: 'Perumbavoor Bus Stand',  order: 1, expectedTime: 0,  latitude: 10.1167, longitude: 76.4667 },
       { name: 'Kuruppampady',           order: 2, expectedTime: 12, latitude: 10.1333, longitude: 76.4833 },
@@ -73,7 +73,7 @@ const ROUTES = [
     routeId: 'ROUTE_5',
     name: 'Route 5 – Kalady → SSET',
     description: 'Kalady · Mattoor · Nayathode · Angamaly · Karukutty · SSET',
-    startTime: '08:00', eveningStartTime: '16:00', duration: '40 mins', totalDuration: 40, price: 30, active: true,
+    startTime: '07:55', eveningStartTime: '16:00', duration: '40 mins', totalDuration: 40, price: 30, active: true,
     stops: [
       { name: 'Kalady',                 order: 1, expectedTime: 0,  latitude: 10.1667, longitude: 76.5333 },
       { name: 'Mattoor',                order: 2, expectedTime: 8,  latitude: 10.1833, longitude: 76.5500 },
@@ -87,7 +87,7 @@ const ROUTES = [
     routeId: 'ROUTE_6',
     name: 'Route 6 – North Paravur → SSET',
     description: 'North Paravur · Cherai Junction · Moothakunnam · Athani · Karukutty · SSET',
-    startTime: '07:35', eveningStartTime: '16:00', duration: '65 mins', totalDuration: 65, price: 45, active: true,
+    startTime: '07:30', eveningStartTime: '16:00', duration: '65 mins', totalDuration: 65, price: 45, active: true,
     stops: [
       { name: 'North Paravur',          order: 1, expectedTime: 0,  latitude: 10.1500, longitude: 76.2167 },
       { name: 'Cherai Junction',        order: 2, expectedTime: 12, latitude: 10.1600, longitude: 76.2800 },
@@ -101,7 +101,7 @@ const ROUTES = [
     routeId: 'ROUTE_7',
     name: 'Route 7 – Thrissur → SSET',
     description: 'Thrissur · Kodakara · Chalakudy · Koratty · Karukutty · SSET',
-    startTime: '07:10', eveningStartTime: '16:00', duration: '90 mins', totalDuration: 90, price: 60, active: true,
+    startTime: '07:05', eveningStartTime: '16:00', duration: '90 mins', totalDuration: 90, price: 60, active: true,
     stops: [
       { name: 'Thrissur KSRTC',         order: 1, expectedTime: 0,  latitude: 10.5276, longitude: 76.2144 },
       { name: 'Kodakara',               order: 2, expectedTime: 25, latitude: 10.3667, longitude: 76.3167 },
