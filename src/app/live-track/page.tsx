@@ -1,18 +1,7 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import { useAuth, getToken } from '@/hooks/useAuth';
-
-const LiveTrackMap = dynamic(() => import('@/components/LiveTrackMap'), {
-  ssr: false,
-  loading: () => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', flexDirection: 'column', gap: 12 }}>
-      <div className="spinner" style={{ width: 36, height: 36, borderWidth: 4 }} />
-      <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>Loading map...</div>
-    </div>
-  ),
-});
 
 export default function LiveTrackPage() {
   useAuth();
@@ -20,7 +9,6 @@ export default function LiveTrackPage() {
   const [buses, setBuses]       = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
   const [timeline, setTimeline] = useState<any>(null);
-  const [showMap, setShowMap]   = useState(false);
   const [loading, setLoading]   = useState(false);
   const intervalRef = useRef<any>(null);
 
@@ -65,21 +53,6 @@ export default function LiveTrackPage() {
 
   const activeBuses = buses.filter(b => b.status === 'Active');
 
-  // ── Map view ──────────────────────────────────────────────────────────────
-  if (showMap) {
-    return (
-      <div style={{ position: 'relative', height: '100vh' }}>
-        <button onClick={() => setShowMap(false)} style={{
-          position: 'fixed', top: 16, left: 16, zIndex: 1100,
-          background: '#fff', border: 'none', borderRadius: 10,
-          padding: '10px 16px', fontWeight: 700, fontSize: 13,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.15)', cursor: 'pointer',
-        }}>← Timeline</button>
-        <LiveTrackMap />
-      </div>
-    );
-  }
-
   // ── Timeline view ─────────────────────────────────────────────────────────
   return (
     <div className="page-shell" style={{ background: '#F1F5F9' }}>
@@ -98,7 +71,6 @@ export default function LiveTrackPage() {
                 : `${activeBuses.length} bus${activeBuses.length !== 1 ? 'es' : ''} active`}
             </div>
           </div>
-          <button onClick={() => setShowMap(true)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', padding: '8px 14px', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}>🗺️ Map</button>
         </div>
 
         {/* Bus selector tabs */}
@@ -107,15 +79,22 @@ export default function LiveTrackPage() {
             const isActive = bus.status === 'Active';
             const isSel    = selected?.busNumber === bus.busNumber;
             return (
-              <button key={bus.busNumber} onClick={() => selectBus(bus)} style={{
-                flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: 'none', cursor: 'pointer',
-                fontWeight: 700, fontSize: 12,
-                background: isSel ? '#fff' : isActive ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)',
-                color: isSel ? '#1e3a8a' : '#fff',
-                boxShadow: isSel ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
-              }}>
-                {isActive ? '🟢' : '🔴'} {bus.busNumber}
-              </button>
+              <div key={bus.busNumber} style={{ display: 'flex', flexShrink: 0, gap: 4 }}>
+                <button onClick={() => selectBus(bus)} style={{
+                  padding: '7px 14px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                  fontWeight: 700, fontSize: 12,
+                  background: isSel ? '#fff' : isActive ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)',
+                  color: isSel ? '#1e3a8a' : '#fff',
+                  boxShadow: isSel ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
+                }}>
+                  {isActive ? '🟢' : '🔴'} {bus.busNumber}
+                </button>
+                <button onClick={() => router.push(`/live-track/map?route=${bus.route}`)} style={{
+                  padding: '7px 10px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                  fontWeight: 700, fontSize: 12,
+                  background: 'rgba(255,255,255,0.15)', color: '#fff',
+                }} title="View on map">🗺️</button>
+              </div>
             );
           })}
           {buses.length === 0 && <div style={{ fontSize: 12, opacity: 0.6, padding: '7px 0' }}>No buses registered</div>}

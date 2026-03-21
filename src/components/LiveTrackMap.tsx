@@ -18,7 +18,7 @@ const ROUTE_COLORS: Record<string, string> = {
 };
 const DEFAULT_COLOR = '#64748B';
 
-export default function LiveTrackMap() {
+export default function LiveTrackMap({ routeId }: { routeId?: string }) {
   const mapRef         = useRef<any>(null);
   const markersRef     = useRef<Record<string, any>>({});
   const polylinesRef   = useRef<any[]>([]);
@@ -148,7 +148,7 @@ export default function LiveTrackMap() {
       const data = await res.json();
       // Only show first 3 routes
       const routeList: any[] = (data.routes || []).filter((r: any) =>
-        ['ROUTE_1', 'ROUTE_2', 'ROUTE_3'].includes(r.routeId)
+        routeId ? r.routeId === routeId : ['ROUTE_1', 'ROUTE_2', 'ROUTE_3'].includes(r.routeId)
       );
       setRoutes(routeList);
 
@@ -201,7 +201,9 @@ export default function LiveTrackMap() {
     try {
       const res  = await fetch('/api/buses', { headers: { Authorization: `Bearer ${getToken()}` } });
       const data = await res.json();
-      const busList: any[] = data.buses || [];
+      const busList: any[] = (data.buses || []).filter((b: any) =>
+        routeId ? b.route === routeId : true
+      );
       setBuses(busList);
       busList.forEach(bus => updateBusMarker(L, bus));
     } catch {}
