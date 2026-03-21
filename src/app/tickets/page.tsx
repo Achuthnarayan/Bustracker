@@ -13,19 +13,15 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// ₹15 base + ₹5 per 4 km slab
+// Single = flat ₹100, Monthly = ₹80/km × 22 working days
 function calcFare(km: number, type: string) {
-  const slabs = Math.ceil(km / 4);
-  const base = 15 + (slabs - 1) * 5;
-  if (type === 'Weekly')  return Math.round(base * 5 * 0.85);   // 5 days, 15% off
-  if (type === 'Monthly') return Math.round(base * 22 * 0.75);  // 22 days, 25% off
-  return base; // Single
+  if (type === 'Monthly') return Math.round(km * 80 * 22);
+  return 100; // Single – flat rate
 }
 
 const TICKET_TYPES = [
-  { value: 'Single',  label: 'Single Trip',  desc: 'One-way journey',          discount: null },
-  { value: 'Weekly',  label: 'Weekly Pass',  desc: '5 days · 15% off',         discount: '15% off' },
-  { value: 'Monthly', label: 'Monthly Pass', desc: '22 days · 25% off',        discount: '25% off' },
+  { value: 'Single',  label: 'Single Trip',  desc: 'One-way journey · flat ₹100', discount: null },
+  { value: 'Monthly', label: 'Monthly Pass', desc: '22 working days · ₹80/km',    discount: null },
 ];
 
 export default function TicketsPage() {
@@ -166,16 +162,15 @@ export default function TicketsPage() {
                   <span style={{ color: 'var(--text-muted)' }}>Distance</span>
                   <span>{fare.km} km</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Fare (₹15 base + ₹5/4km)</span>
-                  <span>₹{calcFare(fare.km, 'Single')}</span>
-                </div>
-                {form.ticketType !== 'Single' && (
+                {form.ticketType === 'Single' ? (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ color: 'var(--text-muted)' }}>
-                      {form.ticketType === 'Weekly' ? '× 5 days − 15%' : '× 22 days − 25%'}
-                    </span>
-                    <span style={{ color: '#10B981', fontWeight: 700 }}>discount applied</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Flat rate (any distance)</span>
+                    <span>₹100</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ color: 'var(--text-muted)' }}>₹80/km × 22 working days</span>
+                    <span>₹{fare.amount}</span>
                   </div>
                 )}
                 <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 4, display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 15 }}>
