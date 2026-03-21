@@ -35,22 +35,22 @@ const ROUTES = [
       { name: 'Edapally',                                 order: 3, expectedTime: 20, latitude: 10.0233, longitude: 76.3114 },
       { name: 'Kalamassery',                              order: 4, expectedTime: 35, latitude: 10.0556, longitude: 76.3201 },
       { name: 'Aluva',                                    order: 5, expectedTime: 50, latitude: 10.1078, longitude: 76.3507 },
-      { name: 'Angamaly',                                 order: 6, expectedTime: 63, latitude: 10.1960, longitude: 76.5720 },
+      { name: 'Angamaly',                                 order: 6, expectedTime: 63, latitude: 10.1960, longitude: 76.3800 },
       { name: 'SCMS School of Engineering and Technology',order: 7, expectedTime: 75, latitude: 10.2167, longitude: 76.5167 },
     ],
   },
   {
     routeId: 'ROUTE_3',
     name: 'Route 3 – Thrissur → SCMS',
-    description: 'Thrissur · Pudukkad · Kodakara · Perambra · Chalakudy · Koratty · SCMS',
+    description: 'Thrissur · Pudukkad · Kodakara · Chalakudy · Koratty · Angamaly · SCMS',
     startTime: '07:00', eveningStartTime: '16:00', duration: '95 mins', totalDuration: 95, price: 55, active: true,
     stops: [
       { name: 'Thrissur',                                  order: 1, expectedTime: 0,  latitude: 10.5276, longitude: 76.2144 },
       { name: 'Pudukkad',                                  order: 2, expectedTime: 18, latitude: 10.4512, longitude: 76.2689 },
       { name: 'Kodakara',                                  order: 3, expectedTime: 35, latitude: 10.3934, longitude: 76.3012 },
-      { name: 'Perambra',                                  order: 4, expectedTime: 50, latitude: 10.3456, longitude: 76.3234 },
-      { name: 'Chalakudy',                                 order: 5, expectedTime: 63, latitude: 10.3012, longitude: 76.3345 },
-      { name: 'Koratty',                                   order: 6, expectedTime: 78, latitude: 10.2623, longitude: 76.3934 },
+      { name: 'Chalakudy',                                 order: 4, expectedTime: 52, latitude: 10.3012, longitude: 76.3345 },
+      { name: 'Koratty',                                   order: 5, expectedTime: 65, latitude: 10.2623, longitude: 76.3934 },
+      { name: 'Angamaly',                                 order: 6, expectedTime: 78, latitude: 10.1960, longitude: 76.3800 },
       { name: 'SCMS School of Engineering and Technology', order: 7, expectedTime: 95, latitude: 10.2167, longitude: 76.5167 },
     ],
   },
@@ -113,22 +113,19 @@ const ROUTES = [
   },
 ];
 
-// One operator + bus per route
+// One operator + bus per route (only routes 1-3 have active buses)
 const OPERATORS = [
   { operatorId: 'OP001', name: 'Driver Rajan',    password: 'driver123', busNumber: 'KL07-BUS01', route: 'ROUTE_1' },
   { operatorId: 'OP002', name: 'Driver Suresh',   password: 'driver123', busNumber: 'KL07-BUS02', route: 'ROUTE_2' },
   { operatorId: 'OP003', name: 'Driver Biju',     password: 'driver123', busNumber: 'KL07-BUS03', route: 'ROUTE_3' },
-  { operatorId: 'OP004', name: 'Driver Manoj',    password: 'driver123', busNumber: 'KL07-BUS04', route: 'ROUTE_4' },
-  { operatorId: 'OP005', name: 'Driver Santhosh', password: 'driver123', busNumber: 'KL07-BUS05', route: 'ROUTE_5' },
-  { operatorId: 'OP006', name: 'Driver Anil',     password: 'driver123', busNumber: 'KL07-BUS06', route: 'ROUTE_6' },
-  { operatorId: 'OP007', name: 'Driver Thomas',   password: 'driver123', busNumber: 'KL07-BUS07', route: 'ROUTE_7' },
 ];
 
 export async function POST() {
   await connectDB();
 
-  // Wipe and re-seed routes
+  // Wipe and re-seed routes and buses
   await Route.deleteMany({});
+  await Bus.deleteMany({});
   await Route.insertMany(ROUTES);
 
   // Upsert operators and buses
