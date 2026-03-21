@@ -235,60 +235,47 @@ export default function DashboardPage() {
             </div>
           ))}
 
-          {/* Top-view bus SVG */}
-          <div style={{ position: 'absolute', top: 30, animation: 'busMove 4s linear infinite' }}>
-            <svg width="56" height="110" viewBox="0 0 56 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Main body */}
-              <rect x="4" y="4" width="48" height="102" rx="8" fill="#F59E0B"/>
-              {/* Roof panel */}
-              <rect x="7" y="8" width="42" height="94" rx="6" fill="#FCD34D"/>
-              {/* Front bumper */}
-              <rect x="6" y="4" width="44" height="8" rx="4" fill="#D97706"/>
-              {/* Rear bumper */}
-              <rect x="6" y="98" width="44" height="8" rx="4" fill="#D97706"/>
-              {/* Front windshield */}
-              <rect x="10" y="10" width="36" height="16" rx="4" fill="#BAE6FD" opacity="0.95"/>
-              {/* Windshield glare */}
-              <rect x="12" y="12" width="10" height="6" rx="2" fill="#fff" opacity="0.4"/>
-              {/* Rear window */}
-              <rect x="10" y="84" width="36" height="12" rx="4" fill="#BAE6FD" opacity="0.8"/>
-              {/* Left side windows row */}
-              <rect x="4" y="32" width="7" height="10" rx="2" fill="#BAE6FD" opacity="0.9"/>
-              <rect x="4" y="46" width="7" height="10" rx="2" fill="#BAE6FD" opacity="0.9"/>
-              <rect x="4" y="60" width="7" height="10" rx="2" fill="#BAE6FD" opacity="0.9"/>
-              <rect x="4" y="74" width="7" height="10" rx="2" fill="#BAE6FD" opacity="0.9"/>
-              {/* Right side windows row */}
-              <rect x="45" y="32" width="7" height="10" rx="2" fill="#BAE6FD" opacity="0.9"/>
-              <rect x="45" y="46" width="7" height="10" rx="2" fill="#BAE6FD" opacity="0.9"/>
-              <rect x="45" y="60" width="7" height="10" rx="2" fill="#BAE6FD" opacity="0.9"/>
-              <rect x="45" y="74" width="7" height="10" rx="2" fill="#BAE6FD" opacity="0.9"/>
-              {/* Center aisle stripe */}
-              <rect x="25" y="28" width="6" height="56" rx="2" fill="#F59E0B" opacity="0.5"/>
-              {/* Seat rows left */}
-              <rect x="10" y="30" width="13" height="8" rx="2" fill="#1e3a8a" opacity="0.25"/>
-              <rect x="10" y="44" width="13" height="8" rx="2" fill="#1e3a8a" opacity="0.25"/>
-              <rect x="10" y="58" width="13" height="8" rx="2" fill="#1e3a8a" opacity="0.25"/>
-              <rect x="10" y="72" width="13" height="8" rx="2" fill="#1e3a8a" opacity="0.25"/>
-              {/* Seat rows right */}
-              <rect x="33" y="30" width="13" height="8" rx="2" fill="#1e3a8a" opacity="0.25"/>
-              <rect x="33" y="44" width="13" height="8" rx="2" fill="#1e3a8a" opacity="0.25"/>
-              <rect x="33" y="58" width="13" height="8" rx="2" fill="#1e3a8a" opacity="0.25"/>
-              <rect x="33" y="72" width="13" height="8" rx="2" fill="#1e3a8a" opacity="0.25"/>
-              {/* Headlights */}
-              <ellipse cx="14" cy="7" rx="4" ry="3" fill="#FEF9C3"/>
-              <ellipse cx="42" cy="7" rx="4" ry="3" fill="#FEF9C3"/>
-              {/* Tail lights */}
-              <ellipse cx="14" cy="103" rx="4" ry="3" fill="#FCA5A5"/>
-              <ellipse cx="42" cy="103" rx="4" ry="3" fill="#FCA5A5"/>
-              {/* Front wheels */}
-              <rect x="0" y="14" width="6" height="14" rx="3" fill="#1F2937"/>
-              <rect x="50" y="14" width="6" height="14" rx="3" fill="#1F2937"/>
-              {/* Rear wheels */}
-              <rect x="0" y="82" width="6" height="14" rx="3" fill="#1F2937"/>
-              <rect x="50" y="82" width="6" height="14" rx="3" fill="#1F2937"/>
+          {/* Side-view bus SVG */}
+          <div style={{ position: 'absolute', top: 38, animation: 'busMove 4s linear infinite' }}>
+            <svg width="110" height="48" viewBox="0 0 110 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Body */}
+              <rect x="4" y="8" width="100" height="30" rx="4" fill="#F59E0B"/>
+              {/* Roof */}
+              <rect x="10" y="4" width="88" height="8" rx="4" fill="#D97706"/>
+              {/* Front cab */}
+              <path d="M96 8 L104 8 L108 20 L96 20 Z" fill="#FCD34D"/>
+              {/* Windshield */}
+              <path d="M97 9 L103 9 L106 19 L97 19 Z" fill="#BAE6FD" opacity="0.9"/>
+              {/* Windows */}
+              <rect x="14" y="11" width="14" height="12" rx="2" fill="#BAE6FD" opacity="0.9"/>
+              <rect x="32" y="11" width="14" height="12" rx="2" fill="#BAE6FD" opacity="0.9"/>
+              <rect x="50" y="11" width="14" height="12" rx="2" fill="#BAE6FD" opacity="0.9"/>
+              <rect x="68" y="11" width="14" height="12" rx="2" fill="#BAE6FD" opacity="0.9"/>
+              {/* Window glare */}
+              <rect x="15" y="12" width="4" height="4" rx="1" fill="#fff" opacity="0.35"/>
+              <rect x="33" y="12" width="4" height="4" rx="1" fill="#fff" opacity="0.35"/>
+              <rect x="51" y="12" width="4" height="4" rx="1" fill="#fff" opacity="0.35"/>
+              <rect x="69" y="12" width="4" height="4" rx="1" fill="#fff" opacity="0.35"/>
+              {/* Door */}
+              <rect x="86" y="11" width="8" height="16" rx="2" fill="#E5E7EB" opacity="0.6"/>
+              <circle cx="93" cy="19" r="1.5" fill="#6B7280"/>
+              {/* Undercarriage */}
+              <rect x="4" y="36" width="100" height="4" rx="2" fill="#92400E"/>
+              {/* Front wheel */}
+              <circle cx="88" cy="42" r="7" fill="#1F2937"/>
+              <circle cx="88" cy="42" r="4" fill="#374151"/>
+              <circle cx="88" cy="42" r="2" fill="#6B7280"/>
+              {/* Rear wheel */}
+              <circle cx="22" cy="42" r="7" fill="#1F2937"/>
+              <circle cx="22" cy="42" r="4" fill="#374151"/>
+              <circle cx="22" cy="42" r="2" fill="#6B7280"/>
+              {/* Headlight */}
+              <ellipse cx="106" cy="24" rx="3" ry="4" fill="#FEF9C3"/>
+              {/* Tail light */}
+              <rect x="4" y="14" width="4" height="8" rx="1" fill="#FCA5A5"/>
               {/* SCMS label */}
-              <rect x="13" y="88" width="30" height="8" rx="2" fill="#1e3a8a" opacity="0.7"/>
-              <text x="28" y="95" textAnchor="middle" fontSize="5" fill="#fff" fontWeight="bold">SCMS SSET</text>
+              <rect x="30" y="25" width="44" height="9" rx="2" fill="#1e3a8a" opacity="0.75"/>
+              <text x="52" y="32" textAnchor="middle" fontSize="6" fill="#fff" fontWeight="bold" fontFamily="sans-serif">SCMS SSET</text>
             </svg>
           </div>
         </div>
@@ -541,71 +528,65 @@ export default function DashboardPage() {
               </div>
 
               {/* Bus 1 — fastest, top lane */}
-              <div style={{ position: 'absolute', bottom: 44, animation: 'bus1race 2.2s linear infinite' }}>
-                <svg width="52" height="26" viewBox="0 0 52 26" fill="none">
-                  <rect x="2" y="1" width="48" height="24" rx="5" fill="#F59E0B"/>
-                  <rect x="5" y="3" width="42" height="18" rx="4" fill="#FCD34D"/>
-                  <rect x="7" y="3" width="16" height="10" rx="2" fill="#BAE6FD" opacity="0.95"/>
-                  <rect x="29" y="3" width="16" height="10" rx="2" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="2" y="6" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="45" y="6" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="2" y="14" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="45" y="14" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <ellipse cx="9" cy="2" rx="3" ry="2" fill="#FEF9C3"/>
-                  <ellipse cx="43" cy="2" rx="3" ry="2" fill="#FEF9C3"/>
-                  <ellipse cx="9" cy="24" rx="3" ry="2" fill="#FCA5A5"/>
-                  <ellipse cx="43" cy="24" rx="3" ry="2" fill="#FCA5A5"/>
-                  <rect x="0" y="4" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <rect x="48" y="4" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <rect x="0" y="16" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <rect x="48" y="16" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <text x="26" y="16" textAnchor="middle" fontSize="5" fill="#1e3a8a" fontWeight="bold">BUS 1</text>
+              <div style={{ position: 'absolute', bottom: 42, animation: 'bus1race 2.2s linear infinite' }}>
+                <svg width="90" height="36" viewBox="0 0 90 36" fill="none">
+                  <rect x="3" y="6" width="82" height="22" rx="3" fill="#F59E0B"/>
+                  <rect x="8" y="3" width="72" height="6" rx="3" fill="#D97706"/>
+                  <path d="M78 6 L85 6 L88 16 L78 16 Z" fill="#FCD34D"/>
+                  <path d="M79 7 L84 7 L86 15 L79 15 Z" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="10" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="25" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="40" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="55" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="3" y="27" width="82" height="3" rx="1" fill="#92400E"/>
+                  <circle cx="72" cy="32" r="5" fill="#1F2937"/><circle cx="72" cy="32" r="2.5" fill="#374151"/>
+                  <circle cx="18" cy="32" r="5" fill="#1F2937"/><circle cx="18" cy="32" r="2.5" fill="#374151"/>
+                  <ellipse cx="87" cy="18" rx="2" ry="3" fill="#FEF9C3"/>
+                  <rect x="3" y="10" width="3" height="6" rx="1" fill="#FCA5A5"/>
+                  <rect x="24" y="19" width="36" height="7" rx="2" fill="#1e3a8a" opacity="0.75"/>
+                  <text x="42" y="25" textAnchor="middle" fontSize="5" fill="#fff" fontWeight="bold" fontFamily="sans-serif">SCMS BUS 1</text>
                 </svg>
               </div>
 
               {/* Bus 2 — medium, middle lane */}
-              <div style={{ position: 'absolute', bottom: 22, animation: 'bus2race 2.8s linear infinite', animationDelay: '0.4s' }}>
-                <svg width="52" height="26" viewBox="0 0 52 26" fill="none">
-                  <rect x="2" y="1" width="48" height="24" rx="5" fill="#3B82F6"/>
-                  <rect x="5" y="3" width="42" height="18" rx="4" fill="#BFDBFE"/>
-                  <rect x="7" y="3" width="16" height="10" rx="2" fill="#BAE6FD" opacity="0.95"/>
-                  <rect x="29" y="3" width="16" height="10" rx="2" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="2" y="6" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="45" y="6" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="2" y="14" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="45" y="14" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <ellipse cx="9" cy="2" rx="3" ry="2" fill="#FEF9C3"/>
-                  <ellipse cx="43" cy="2" rx="3" ry="2" fill="#FEF9C3"/>
-                  <ellipse cx="9" cy="24" rx="3" ry="2" fill="#FCA5A5"/>
-                  <ellipse cx="43" cy="24" rx="3" ry="2" fill="#FCA5A5"/>
-                  <rect x="0" y="4" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <rect x="48" y="4" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <rect x="0" y="16" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <rect x="48" y="16" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <text x="26" y="16" textAnchor="middle" fontSize="5" fill="#1e3a8a" fontWeight="bold">BUS 2</text>
+              <div style={{ position: 'absolute', bottom: 21, animation: 'bus2race 2.8s linear infinite', animationDelay: '0.4s' }}>
+                <svg width="90" height="36" viewBox="0 0 90 36" fill="none">
+                  <rect x="3" y="6" width="82" height="22" rx="3" fill="#3B82F6"/>
+                  <rect x="8" y="3" width="72" height="6" rx="3" fill="#1D4ED8"/>
+                  <path d="M78 6 L85 6 L88 16 L78 16 Z" fill="#BFDBFE"/>
+                  <path d="M79 7 L84 7 L86 15 L79 15 Z" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="10" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="25" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="40" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="55" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="3" y="27" width="82" height="3" rx="1" fill="#1e3a8a"/>
+                  <circle cx="72" cy="32" r="5" fill="#1F2937"/><circle cx="72" cy="32" r="2.5" fill="#374151"/>
+                  <circle cx="18" cy="32" r="5" fill="#1F2937"/><circle cx="18" cy="32" r="2.5" fill="#374151"/>
+                  <ellipse cx="87" cy="18" rx="2" ry="3" fill="#FEF9C3"/>
+                  <rect x="3" y="10" width="3" height="6" rx="1" fill="#FCA5A5"/>
+                  <rect x="24" y="19" width="36" height="7" rx="2" fill="#1e3a8a" opacity="0.75"/>
+                  <text x="42" y="25" textAnchor="middle" fontSize="5" fill="#fff" fontWeight="bold" fontFamily="sans-serif">SCMS BUS 2</text>
                 </svg>
               </div>
 
               {/* Bus 3 — slowest, bottom lane */}
-              <div style={{ position: 'absolute', bottom: 2, animation: 'bus3race 3.5s linear infinite', animationDelay: '1s' }}>
-                <svg width="52" height="26" viewBox="0 0 52 26" fill="none">
-                  <rect x="2" y="1" width="48" height="24" rx="5" fill="#10B981"/>
-                  <rect x="5" y="3" width="42" height="18" rx="4" fill="#A7F3D0"/>
-                  <rect x="7" y="3" width="16" height="10" rx="2" fill="#BAE6FD" opacity="0.95"/>
-                  <rect x="29" y="3" width="16" height="10" rx="2" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="2" y="6" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="45" y="6" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="2" y="14" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <rect x="45" y="14" width="5" height="6" rx="1" fill="#BAE6FD" opacity="0.8"/>
-                  <ellipse cx="9" cy="2" rx="3" ry="2" fill="#FEF9C3"/>
-                  <ellipse cx="43" cy="2" rx="3" ry="2" fill="#FEF9C3"/>
-                  <ellipse cx="9" cy="24" rx="3" ry="2" fill="#FCA5A5"/>
-                  <ellipse cx="43" cy="24" rx="3" ry="2" fill="#FCA5A5"/>
-                  <rect x="0" y="4" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <rect x="48" y="4" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <rect x="0" y="16" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <rect x="48" y="16" width="4" height="6" rx="2" fill="#1F2937"/>
-                  <text x="26" y="16" textAnchor="middle" fontSize="5" fill="#065f46" fontWeight="bold">BUS 3</text>
+              <div style={{ position: 'absolute', bottom: 1, animation: 'bus3race 3.5s linear infinite', animationDelay: '1s' }}>
+                <svg width="90" height="36" viewBox="0 0 90 36" fill="none">
+                  <rect x="3" y="6" width="82" height="22" rx="3" fill="#10B981"/>
+                  <rect x="8" y="3" width="72" height="6" rx="3" fill="#065F46"/>
+                  <path d="M78 6 L85 6 L88 16 L78 16 Z" fill="#A7F3D0"/>
+                  <path d="M79 7 L84 7 L86 15 L79 15 Z" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="10" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="25" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="40" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="55" y="8" width="11" height="9" rx="2" fill="#BAE6FD" opacity="0.9"/>
+                  <rect x="3" y="27" width="82" height="3" rx="1" fill="#065F46"/>
+                  <circle cx="72" cy="32" r="5" fill="#1F2937"/><circle cx="72" cy="32" r="2.5" fill="#374151"/>
+                  <circle cx="18" cy="32" r="5" fill="#1F2937"/><circle cx="18" cy="32" r="2.5" fill="#374151"/>
+                  <ellipse cx="87" cy="18" rx="2" ry="3" fill="#FEF9C3"/>
+                  <rect x="3" y="10" width="3" height="6" rx="1" fill="#FCA5A5"/>
+                  <rect x="24" y="19" width="36" height="7" rx="2" fill="#065F46" opacity="0.85"/>
+                  <text x="42" y="25" textAnchor="middle" fontSize="5" fill="#fff" fontWeight="bold" fontFamily="sans-serif">SCMS BUS 3</text>
                 </svg>
               </div>
 
