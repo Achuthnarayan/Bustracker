@@ -13,15 +13,15 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Single = flat ₹100, Monthly = ₹80/km × 22 working days
+// Single = flat ₹100, Monthly = ₹80 × km (one-time monthly fee)
 function calcFare(km: number, type: string) {
-  if (type === 'Monthly') return Math.round(km * 80 * 22);
+  if (type === 'Monthly') return Math.round(km * 80);
   return 100; // Single – flat rate
 }
 
 const TICKET_TYPES = [
-  { value: 'Single',  label: 'Single Trip',  desc: 'One-way journey · flat ₹100', discount: null },
-  { value: 'Monthly', label: 'Monthly Pass', desc: '22 working days · ₹80/km',    discount: null },
+  { value: 'Single',  label: 'Single Trip',  desc: 'One-way journey · flat ₹100',      discount: null },
+  { value: 'Monthly', label: 'Monthly Pass', desc: 'Monthly fee · ₹80 per km distance', discount: null },
 ];
 
 export default function TicketsPage() {
@@ -169,7 +169,7 @@ export default function TicketsPage() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ color: 'var(--text-muted)' }}>₹80/km × 22 working days</span>
+                    <span style={{ color: 'var(--text-muted)' }}>₹80 × {fare.km} km</span>
                     <span>₹{fare.amount}</span>
                   </div>
                 )}
