@@ -40,10 +40,6 @@ export default function RoutesPage() {
                 <div style={{ fontSize: 16, fontWeight: 800 }}>{route.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>{route.description}</div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent)' }}>₹{route.price}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{route.duration}</div>
-              </div>
             </div>
 
             {/* Stops */}
