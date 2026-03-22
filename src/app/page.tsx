@@ -69,7 +69,7 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section style={s.hero}>
-        <div style={s.badge}>🎓 College Bus</div>
+        <div style={s.badge}>🎓 SSET – Karukutty</div>
         <h1 style={s.h1}>Track Your Bus<br />In Real Time</h1>
         <p style={s.heroP}>
           Never miss your college bus again. Live GPS updates, ML-powered arrival estimates,
