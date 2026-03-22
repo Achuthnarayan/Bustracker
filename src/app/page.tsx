@@ -76,8 +76,7 @@ export default function LandingPage() {
           and digital tickets — all in one place.
         </p>
         <div style={s.heroBtns}>
-          <HeroBtn href="/signup" primary>Get Started Free</HeroBtn>
-          <HeroBtn href="/login">Sign In</HeroBtn>
+          <HeroBtn href="/login" primary>Sign In</HeroBtn>
         </div>
       </section>
 
