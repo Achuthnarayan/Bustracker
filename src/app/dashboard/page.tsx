@@ -184,59 +184,75 @@ export default function DashboardPage() {
         <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 2 }}>Hey, {user?.name || 'Student'}</div>
         <div style={{ fontSize: 12, opacity: 0.75 }}>ID: {user?.collegeId || '—'}</div>
 
-        {/* Animated top-view bus scene */}
-        <div style={{ marginTop: 20, borderRadius: 16, overflow: 'hidden', position: 'relative', height: 110, background: '#4ade80' }}>
+        {/* Animated side-view bus scene */}
+        <div style={{ marginTop: 20, borderRadius: 16, overflow: 'hidden', position: 'relative', height: 120 }}>
           <style>{`
-            @keyframes busMove { 0% { transform: translateX(-120px); } 100% { transform: translateX(calc(100vw + 120px)); } }
-            @keyframes dashMove { 0% { transform: translateX(0); } 100% { transform: translateX(-60px); } }
-            @keyframes treeSway { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+            @keyframes busMove { 0% { transform: translateX(-130px); } 100% { transform: translateX(calc(100vw + 130px)); } }
+            @keyframes dashMove { 0% { transform: translateX(0); } 100% { transform: translateX(-80px); } }
+            @keyframes treeSway { 0%,100% { transform-origin: bottom center; transform: rotate(0deg); } 50% { transform-origin: bottom center; transform: rotate(2deg); } }
+            @keyframes cloudDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-200px); } }
           `}</style>
 
-          {/* Grass */}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #4ade80 0%, #22c55e 100%)' }} />
+          {/* Sky */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #7dd3fc 0%, #bae6fd 60%, #e0f2fe 100%)' }} />
 
-          {/* Road */}
-          <div style={{ position: 'absolute', top: 28, left: 0, right: 0, height: 54, background: '#374151' }} />
-
-          {/* Road edge lines */}
-          <div style={{ position: 'absolute', top: 28, left: 0, right: 0, height: 3, background: '#f9fafb' }} />
-          <div style={{ position: 'absolute', top: 79, left: 0, right: 0, height: 3, background: '#f9fafb' }} />
-
-          {/* Animated center dashes */}
-          <div style={{ position: 'absolute', top: 52, left: 0, right: 0, height: 4, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', gap: 0, animation: 'dashMove 0.6s linear infinite', width: '200%' }}>
-              {Array.from({ length: 30 }).map((_, i) => (
-                <div key={i} style={{ width: 30, height: 4, background: '#fbbf24', marginRight: 30, flexShrink: 0 }} />
+          {/* Clouds */}
+          <div style={{ position: 'absolute', top: 8, left: 0, right: 0, overflow: 'hidden', height: 30 }}>
+            <div style={{ display: 'flex', gap: 120, animation: 'cloudDrift 12s linear infinite', width: '300%' }}>
+              {[0,1,2,3,4,5].map(i => (
+                <div key={i} style={{ position: 'relative', flexShrink: 0 }}>
+                  <div style={{ width: 60, height: 16, background: 'rgba(255,255,255,0.9)', borderRadius: 20 }} />
+                  <div style={{ position: 'absolute', top: -8, left: 10, width: 36, height: 20, background: 'rgba(255,255,255,0.9)', borderRadius: 20 }} />
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Trees top row */}
-          {[5, 18, 32, 46, 60, 74, 88].map((left, i) => (
-            <div key={i} style={{ position: 'absolute', top: 4, left: `${left}%`, animation: 'treeSway 3s ease-in-out infinite', animationDelay: `${i * 0.4}s` }}>
-              <svg width="18" height="18" viewBox="0 0 18 18">
-                <circle cx="9" cy="9" r="8" fill="#15803d" />
-                <circle cx="6" cy="7" r="4" fill="#16a34a" />
-                <circle cx="12" cy="7" r="4" fill="#16a34a" />
-                <circle cx="9" cy="5" r="4" fill="#22c55e" />
-              </svg>
-            </div>
-          ))}
+          {/* Distant hills */}
+          <div style={{ position: 'absolute', bottom: 28, left: 0, right: 0 }}>
+            <svg width="100%" height="40" viewBox="0 0 400 40" preserveAspectRatio="none">
+              <ellipse cx="60" cy="40" rx="90" ry="35" fill="#86efac" />
+              <ellipse cx="200" cy="40" rx="110" ry="30" fill="#4ade80" />
+              <ellipse cx="340" cy="40" rx="90" ry="32" fill="#86efac" />
+            </svg>
+          </div>
 
-          {/* Trees bottom row */}
-          {[10, 25, 40, 55, 70, 85].map((left, i) => (
-            <div key={i} style={{ position: 'absolute', bottom: 4, left: `${left}%`, animation: 'treeSway 3s ease-in-out infinite', animationDelay: `${i * 0.5}s` }}>
-              <svg width="18" height="18" viewBox="0 0 18 18">
-                <circle cx="9" cy="9" r="8" fill="#15803d" />
-                <circle cx="6" cy="7" r="4" fill="#16a34a" />
-                <circle cx="12" cy="7" r="4" fill="#16a34a" />
-                <circle cx="9" cy="5" r="4" fill="#22c55e" />
+          {/* Ground strip */}
+          <div style={{ position: 'absolute', bottom: 18, left: 0, right: 0, height: 12, background: '#22c55e' }} />
+
+          {/* Road surface */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 20, background: '#374151' }} />
+          {/* Road top edge */}
+          <div style={{ position: 'absolute', bottom: 18, left: 0, right: 0, height: 3, background: '#f9fafb' }} />
+          {/* Road bottom edge */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: '#f9fafb' }} />
+
+          {/* Animated road dashes */}
+          <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, height: 3, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', animation: 'dashMove 0.5s linear infinite', width: '200%' }}>
+              {Array.from({ length: 30 }).map((_, i) => (
+                <div key={i} style={{ width: 40, height: 3, background: '#fbbf24', marginRight: 40, flexShrink: 0 }} />
+              ))}
+            </div>
+          </div>
+
+          {/* Trees along the road */}
+          {[8, 22, 38, 54, 70, 86].map((left, i) => (
+            <div key={i} style={{ position: 'absolute', bottom: 18, left: `${left}%`, animation: `treeSway 2.5s ease-in-out infinite`, animationDelay: `${i * 0.3}s` }}>
+              <svg width="14" height="28" viewBox="0 0 14 28">
+                {/* trunk */}
+                <rect x="5" y="18" width="4" height="10" fill="#92400e" />
+                {/* foliage */}
+                <ellipse cx="7" cy="14" rx="7" ry="8" fill="#15803d" />
+                <ellipse cx="4" cy="12" rx="4" ry="5" fill="#16a34a" />
+                <ellipse cx="10" cy="12" rx="4" ry="5" fill="#16a34a" />
+                <ellipse cx="7" cy="8" rx="5" ry="6" fill="#22c55e" />
               </svg>
             </div>
           ))}
 
           {/* Side-view bus SVG */}
-          <div style={{ position: 'absolute', top: 38, animation: 'busMove 4s linear infinite' }}>
+          <div style={{ position: 'absolute', bottom: 18, animation: 'busMove 4s linear infinite' }}>
             <svg width="110" height="48" viewBox="0 0 110 48" fill="none" xmlns="http://www.w3.org/2000/svg">
               {/* Body */}
               <rect x="4" y="8" width="100" height="30" rx="4" fill="#F59E0B"/>
