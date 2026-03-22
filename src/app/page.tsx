@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 
 const features = [
   { icon: '📍', title: 'Live GPS Tracking',     desc: 'See your bus on an interactive map, updated every 5 seconds via ESP32 hardware.' },
@@ -55,11 +56,71 @@ function HeroBtn({ href, primary, children }: { href: string; primary?: boolean;
 }
 
 export default function LandingPage() {
+  const pageRef = useRef<HTMLDivElement>(null);
+  const [busY, setBusY] = useState(0);
+
+  useEffect(() => {
+    function onScroll() {
+      const el = pageRef.current;
+      if (!el) return;
+      const totalH = el.scrollHeight - window.innerHeight;
+      const pct = Math.min(1, window.scrollY / totalH);
+      setBusY(pct * 100);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   return (
-    <div className="landing-page" style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#F8FAFC' }}>
+    <div ref={pageRef} className="landing-page" style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#F8FAFC', position: 'relative' }}>
+
+      {/* Scroll road — vertical strip with center dashes and bus */}
+      <div style={{
+        position: 'fixed', left: '50%', top: 0, transform: 'translateX(-50%)',
+        width: 48, height: '100vh', zIndex: 0, pointerEvents: 'none',
+      }}>
+        {/* Road surface */}
+        <div style={{ position: 'absolute', inset: 0, background: '#374151', opacity: 0.18, borderRadius: 4 }} />
+        {/* Center dashes */}
+        <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, transform: 'translateX(-50%)', width: 4, overflow: 'hidden' }}>
+          {Array.from({ length: 40 }).map((_, i) => (
+            <div key={i} style={{ width: 4, height: 20, background: '#fbbf24', borderRadius: 2, marginBottom: 16, opacity: 0.7 }} />
+          ))}
+        </div>
+        {/* Bus moving with scroll */}
+        <div style={{
+          position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+          top: `calc(${busY}% - 24px)`,
+          transition: 'top 0.1s linear',
+        }}>
+          <svg width="36" height="56" viewBox="0 0 36 56" fill="none">
+            {/* Body */}
+            <rect x="4" y="6" width="28" height="38" rx="4" fill="#F59E0B"/>
+            {/* Roof */}
+            <rect x="6" y="2" width="24" height="8" rx="3" fill="#D97706"/>
+            {/* Front windshield */}
+            <rect x="8" y="8" width="20" height="10" rx="2" fill="#BAE6FD" opacity="0.9"/>
+            {/* Windows row */}
+            <rect x="7" y="22" width="8" height="7" rx="1.5" fill="#BAE6FD" opacity="0.85"/>
+            <rect x="21" y="22" width="8" height="7" rx="1.5" fill="#BAE6FD" opacity="0.85"/>
+            <rect x="7" y="32" width="8" height="7" rx="1.5" fill="#BAE6FD" opacity="0.85"/>
+            <rect x="21" y="32" width="8" height="7" rx="1.5" fill="#BAE6FD" opacity="0.85"/>
+            {/* Undercarriage */}
+            <rect x="4" y="42" width="28" height="4" rx="2" fill="#92400E"/>
+            {/* Left wheel */}
+            <circle cx="10" cy="50" r="5" fill="#1F2937"/>
+            <circle cx="10" cy="50" r="2.5" fill="#374151"/>
+            {/* Right wheel */}
+            <circle cx="26" cy="50" r="5" fill="#1F2937"/>
+            <circle cx="26" cy="50" r="2.5" fill="#374151"/>
+            {/* Headlights */}
+            <rect x="8" y="4" width="6" height="3" rx="1" fill="#FEF9C3"/>
+            <rect x="22" y="4" width="6" height="3" rx="1" fill="#FEF9C3"/>
+          </svg>
+        </div>
+      </div>
 
       {/* Nav */}
-      <nav style={s.nav}>
+      <nav style={{ ...s.nav, position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={s.logo}>🚌 BusTracker</div>
         <div style={s.navBtns}>
           <NavBtn href="/login" outline>Login</NavBtn>
