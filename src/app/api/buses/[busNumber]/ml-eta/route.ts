@@ -25,10 +25,13 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
       const d = haversine(bus.latitude, bus.longitude, stop.latitude, stop.longitude);
       if (d < minDist) { minDist = d; currentStopIndex = i; }
     });
-    if (minDist > RADIUS) {
+
+    // Only fall back to time-based if bus is Offline or has no GPS coordinates
+    const hasGPS = bus.latitude && bus.longitude && effectiveStatus === 'Active';
+    if (!hasGPS) {
       const now = new Date();
-      const [sh, sm] = route.startTime.split(':').map(Number);
-      const startTime = new Date(now); startTime.setHours(sh, sm, 0, 0);
+      const [sh2, sm2] = route.startTime.split(':').map(Number);
+      const startTime = new Date(now); startTime.setHours(sh2, sm2, 0, 0);
       const elapsed = Math.max(0, (now.getTime() - startTime.getTime()) / 60000);
       for (let i = route.stops.length - 1; i >= 0; i--) {
         if (elapsed >= route.stops[i].expectedTime) { currentStopIndex = i; break; }
