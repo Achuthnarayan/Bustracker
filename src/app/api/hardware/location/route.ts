@@ -37,9 +37,12 @@ async function triggerPushNotifications(bus: any, route: any) {
     const DEBOUNCE_MS = 5 * 60 * 1000;
 
     for (const sub of subs) {
-      // Find the user's boarding stop (first upcoming stop after current)
-      const userStopIndex = stops.findIndex((s: any) => s.order > stops[currentStopIndex].order);
-      if (userStopIndex === -1) continue;
+      // Use user's specific boarding stop, or fall back to next stop after current
+      const userStopIndex = sub.boardingStop
+        ? stops.findIndex((s: any) => s.name === sub.boardingStop)
+        : stops.findIndex((s: any) => s.order > stops[currentStopIndex].order);
+
+      if (userStopIndex === -1 || userStopIndex <= currentStopIndex) continue;
       const userStop = stops[userStopIndex];
 
       // Chain ETA from current stop to user's stop using recorded segment times

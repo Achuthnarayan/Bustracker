@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifBefore, setNotifBefore] = useState(10);
   const [notifRoute, setNotifRoute] = useState('');
+  const [notifStop, setNotifStop] = useState('');
   const [notifLoading, setNotifLoading] = useState(false);
 
   const hr = new Date().getHours();
@@ -87,6 +88,7 @@ export default function DashboardPage() {
       setNotifEnabled(prefs.enabled || false);
       setNotifBefore(prefs.notifyBefore || 10);
       setNotifRoute(prefs.routeId || '');
+      setNotifStop(prefs.boardingStop || '');
     }
   }
 
@@ -124,10 +126,10 @@ export default function DashboardPage() {
       await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: sub.toJSON(), routeId: notifRoute, notifyBefore: notifBefore }),
+        body: JSON.stringify({ subscription: sub.toJSON(), routeId: notifRoute, boardingStop: notifStop, notifyBefore: notifBefore }),
       });
 
-      localStorage.setItem('push_notif_prefs', JSON.stringify({ enabled: true, notifyBefore: notifBefore, routeId: notifRoute }));
+      localStorage.setItem('push_notif_prefs', JSON.stringify({ enabled: true, notifyBefore: notifBefore, routeId: notifRoute, boardingStop: notifStop }));
       setNotifEnabled(true);
     } catch (err: any) {
       alert('Failed to enable notifications: ' + err.message);
@@ -153,9 +155,9 @@ export default function DashboardPage() {
       await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: sub.toJSON(), routeId: notifRoute, notifyBefore: notifBefore }),
+        body: JSON.stringify({ subscription: sub.toJSON(), routeId: notifRoute, boardingStop: notifStop, notifyBefore: notifBefore }),
       });
-      localStorage.setItem('push_notif_prefs', JSON.stringify({ enabled: true, notifyBefore: notifBefore, routeId: notifRoute }));
+      localStorage.setItem('push_notif_prefs', JSON.stringify({ enabled: true, notifyBefore: notifBefore, routeId: notifRoute, boardingStop: notifStop }));
     } catch {} finally { setNotifLoading(false); }
   }
 
@@ -439,7 +441,7 @@ export default function DashboardPage() {
             <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Your Route</label>
             <select
               value={notifRoute}
-              onChange={e => setNotifRoute(e.target.value)}
+              onChange={e => { setNotifRoute(e.target.value); setNotifStop(''); }}
               style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 13, background: '#fff' }}
             >
               <option value="">Select your bus route</option>
@@ -448,6 +450,27 @@ export default function DashboardPage() {
               ))}
             </select>
           </div>
+
+          {/* Boarding stop selector — shows stops of selected route */}
+          {notifRoute && (() => {
+            const selectedRoute = routes.find((r: any) => r.routeId === notifRoute);
+            const stops = selectedRoute?.stops?.sort((a: any, b: any) => a.order - b.order) || [];
+            return (
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Your Boarding Stop</label>
+                <select
+                  value={notifStop}
+                  onChange={e => setNotifStop(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid var(--border)', fontSize: 13, background: '#fff' }}
+                >
+                  <option value="">Select your boarding stop</option>
+                  {stops.map((s: any) => (
+                    <option key={s.name} value={s.name}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            );
+          })()}
 
           <div style={{ marginBottom: 18 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>
@@ -474,14 +497,14 @@ export default function DashboardPage() {
               </button>
             </div>
           ) : (
-            <button className="btn btn-primary" style={{ width: '100%', fontSize: 13 }} disabled={notifLoading || !notifRoute} onClick={enableNotifications}>
+            <button className="btn btn-primary" style={{ width: '100%', fontSize: 13 }} disabled={notifLoading || !notifRoute || !notifStop} onClick={enableNotifications}>
               {notifLoading ? 'Enabling...' : '🔔 Enable Notifications'}
             </button>
           )}
 
           {notifEnabled && (
             <div style={{ marginTop: 12, background: '#F0FDF4', border: '1px solid #A7F3D0', borderRadius: 10, padding: '8px 12px', fontSize: 12, color: '#065F46' }}>
-              ✓ Notifications active — you'll be alerted {notifBefore} min before your bus arrives
+              ✓ Notifications active — alerting {notifBefore} min before bus reaches <strong>{notifStop || 'your stop'}</strong>
             </div>
           )}
         </div>

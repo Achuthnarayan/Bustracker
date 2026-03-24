@@ -83,10 +83,11 @@ tripHistorySchema.index({ routeId: 1, fromStop: 1, toStop: 1, hourOfDay: 1 });
 // ── PushSubscription ──────────────────────────────────────────────────────────
 const pushSubscriptionSchema = new Schema({
   userId:       { type: String, required: true, unique: true },
-  subscription: { type: Object, required: true }, // web push subscription object
-  routeId:      { type: String },                 // user's bus route
-  notifyBefore: { type: Number, default: 10 },    // minutes before arrival
-  notifiedAt:   { type: Date },                   // last notification sent (debounce)
+  subscription: { type: Object, required: true },
+  routeId:      { type: String },
+  boardingStop: { type: String },           // user's specific boarding stop
+  notifyBefore: { type: Number, default: 10 },
+  notifiedAt:   { type: Date },
 }, { timestamps: true });
 
 // ── Alert ─────────────────────────────────────────────────────────────────────

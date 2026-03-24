@@ -13,13 +13,13 @@ export async function POST(req: Request) {
   const user = requireAuth(req);
   if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const { subscription, routeId, notifyBefore } = await req.json();
+  const { subscription, routeId, boardingStop, notifyBefore } = await req.json();
   if (!subscription) return NextResponse.json({ message: 'subscription required' }, { status: 400 });
 
   await connectDB();
   await PushSub.findOneAndUpdate(
     { userId: user.id },
-    { subscription, routeId, notifyBefore: notifyBefore ?? 10 },
+    { subscription, routeId, boardingStop, notifyBefore: notifyBefore ?? 10 },
     { upsert: true, new: true }
   );
   return NextResponse.json({ message: 'Subscribed' });
