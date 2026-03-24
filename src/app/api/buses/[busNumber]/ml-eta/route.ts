@@ -46,30 +46,43 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
 
     const stops = route.stops.sort((a: any, b: any) => a.order - b.order);
 
-    // ── Find current stop by GPS (nearest stop) ──────────────────────────────
     const hasGPS = bus.latitude && bus.longitude && effectiveStatus === 'Active';
-    let currentStopIndex = 0;
 
-    if (hasGPS) {
-      let minDist = Infinity;
-      stops.forEach((stop: any, i: number) => {
-        const d = haversine(bus.latitude, bus.longitude, stop.latitude, stop.longitude);
-        if (d < minDist) { minDist = d; currentStopIndex = i; }
-      });
-    } else {
+    // ── Find current segment (bus is between prevStop and nextStop) ─────────
+    let prevStopIndex = 0;
+    let minSegDist = Infinity;
+
+    if (!hasGPS) {
       // Offline: fall back to schedule time
-      const [sh, sm] = route.startTime.split(':').map(Number);
-      const now = new Date();
-      const start = new Date(now); start.setHours(sh, sm, 0, 0);
-      const elapsed = Math.max(0, (now.getTime() - start.getTime()) / 60000);
+      const [sh2, sm2] = route.startTime.split(':').map(Number);
+      const now2 = new Date();
+      const start2 = new Date(now2); start2.setHours(sh2, sm2, 0, 0);
+      const elapsed2 = Math.max(0, (now2.getTime() - start2.getTime()) / 60000);
       for (let i = stops.length - 1; i >= 0; i--) {
-        if (elapsed >= stops[i].expectedTime) { currentStopIndex = i; break; }
+        if (elapsed2 >= stops[i].expectedTime) { prevStopIndex = i; break; }
+      }
+    } else {
+      for (let i = 0; i < stops.length - 1; i++) {
+        const dPrev = haversine(bus.latitude, bus.longitude, stops[i].latitude, stops[i].longitude);
+        const dNext = haversine(bus.latitude, bus.longitude, stops[i + 1].latitude, stops[i + 1].longitude);
+        const segLen = haversine(stops[i].latitude, stops[i].longitude, stops[i + 1].latitude, stops[i + 1].longitude);
+        const segDist = Math.min(dPrev, dNext, (dPrev + dNext - segLen) / 2);
+        if (segDist < minSegDist) { minSegDist = segDist; prevStopIndex = i; }
       }
     }
 
+    const nextStopIndex = Math.min(prevStopIndex + 1, stops.length - 1);
+
+    // How far through the current segment (0 = at prevStop, 1 = at nextStop)
+    const distFromPrev = haversine(bus.latitude, bus.longitude, stops[prevStopIndex].latitude, stops[prevStopIndex].longitude);
+    const segTotalDist = haversine(stops[prevStopIndex].latitude, stops[prevStopIndex].longitude, stops[nextStopIndex].latitude, stops[nextStopIndex].longitude);
+    const segProgress = hasGPS && segTotalDist > 0 ? Math.min(1, distFromPrev / segTotalDist) : 0;
+
+    // currentStopIndex = prevStop (bus has passed it, heading to nextStop)
+    const currentStopIndex = prevStopIndex;
+
     // ── Chain ETAs forward from current stop ─────────────────────────────────
-    // currentArrivalTime = now (bus is at/near this stop right now)
-    let chainTime = new Date(); // rolling arrival time for each upcoming stop
+    let chainTime = new Date();
 
     const result = [];
     for (let i = 0; i < stops.length; i++) {
@@ -79,38 +92,38 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
         result.push({ ...stop.toObject(), status: 'passed', etaMinutes: 0, etaFormatted: 'Passed', arrivalTime: null, confidence: null });
 
       } else if (i === currentStopIndex) {
-        result.push({ ...stop.toObject(), status: 'current', etaMinutes: 0, etaFormatted: 'Bus is here', arrivalTime: fmtTime(chainTime), confidence: null });
+        result.push({ ...stop.toObject(), status: 'passed', etaMinutes: 0, etaFormatted: 'Passed', arrivalTime: null, confidence: null });
 
-      } else {
-        const fromStop = stops[i - 1].name;
-        const toStop = stop.name;
-
-        // Try recorded average segment time first
-        let segmentMins: number;
-        let confidence: string;
-        const recorded = await avgSegmentMinutes(route.routeId, fromStop, toStop);
-
-        if (recorded && recorded > 0) {
-          segmentMins = recorded;
-          confidence = 'recorded';
-        } else {
-          // Fall back to scheduled segment duration
-          const scheduledSeg = stop.expectedTime - stops[i - 1].expectedTime;
-          segmentMins = scheduledSeg > 0 ? scheduledSeg : 10;
-          confidence = 'scheduled';
-        }
-
-        chainTime = new Date(chainTime.getTime() + segmentMins * 60000);
+      } else if (i === nextStopIndex) {
+        // First upcoming stop — subtract already-traveled portion of this segment
+        const fromStop = stops[currentStopIndex].name;
+        const recorded = await avgSegmentMinutes(route.routeId, fromStop, stop.name);
+        const segMins = recorded ?? (stop.expectedTime - stops[currentStopIndex].expectedTime);
+        const remainingMins = segMins * (1 - segProgress);
+        chainTime = new Date(chainTime.getTime() + remainingMins * 60000);
         const etaMs = chainTime.getTime() - Date.now();
-
         result.push({
-          ...stop.toObject(),
-          status: 'upcoming',
+          ...stop.toObject(), status: 'upcoming',
           etaMinutes: Math.max(0, Math.round(etaMs / 60000)),
           etaFormatted: fmtEta(etaMs),
           arrivalTime: fmtTime(chainTime),
-          confidence,
-          segmentMins: Math.round(segmentMins),
+          confidence: recorded ? 'recorded' : 'scheduled',
+          segmentMins: Math.round(remainingMins),
+        });
+
+      } else {
+        const fromStop = stops[i - 1].name;
+        const recorded = await avgSegmentMinutes(route.routeId, fromStop, stop.name);
+        const segMins = recorded ?? (stop.expectedTime - stops[i - 1].expectedTime || 10);
+        chainTime = new Date(chainTime.getTime() + segMins * 60000);
+        const etaMs = chainTime.getTime() - Date.now();
+        result.push({
+          ...stop.toObject(), status: 'upcoming',
+          etaMinutes: Math.max(0, Math.round(etaMs / 60000)),
+          etaFormatted: fmtEta(etaMs),
+          arrivalTime: fmtTime(chainTime),
+          confidence: recorded ? 'recorded' : 'scheduled',
+          segmentMins: Math.round(segMins),
         });
       }
     }

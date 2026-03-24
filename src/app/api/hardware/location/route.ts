@@ -24,12 +24,25 @@ async function triggerPushNotifications(bus: any, route: any) {
   try {
     const stops = route.stops.sort((a: any, b: any) => a.order - b.order);
 
-    // Find nearest stop by GPS
-    let currentStopIndex = 0, minDist = Infinity;
-    stops.forEach((stop: any, i: number) => {
-      const d = haversine(bus.latitude, bus.longitude, stop.latitude, stop.longitude);
-      if (d < minDist) { minDist = d; currentStopIndex = i; }
-    });
+    // Find the two stops the bus is currently between (prevStop → nextStop)
+    // by finding which segment the bus is closest to
+    let prevStopIndex = 0;
+    let minSegDist = Infinity;
+    for (let i = 0; i < stops.length - 1; i++) {
+      const dPrev = haversine(bus.latitude, bus.longitude, stops[i].latitude, stops[i].longitude);
+      const dNext = haversine(bus.latitude, bus.longitude, stops[i + 1].latitude, stops[i + 1].longitude);
+      const segLen = haversine(stops[i].latitude, stops[i].longitude, stops[i + 1].latitude, stops[i + 1].longitude);
+      // Approximate perpendicular distance to segment
+      const segDist = Math.min(dPrev, dNext, (dPrev + dNext - segLen) / 2);
+      if (segDist < minSegDist) { minSegDist = segDist; prevStopIndex = i; }
+    }
+    const nextStopIndex = prevStopIndex + 1;
+
+    // How far through the current segment is the bus? (0.0 = at prevStop, 1.0 = at nextStop)
+    const distFromPrev = haversine(bus.latitude, bus.longitude, stops[prevStopIndex].latitude, stops[prevStopIndex].longitude);
+    const distFromNext = haversine(bus.latitude, bus.longitude, stops[nextStopIndex].latitude, stops[nextStopIndex].longitude);
+    const segTotalDist = haversine(stops[prevStopIndex].latitude, stops[prevStopIndex].longitude, stops[nextStopIndex].latitude, stops[nextStopIndex].longitude);
+    const progress = segTotalDist > 0 ? Math.min(1, distFromPrev / segTotalDist) : 0;
 
     const subs = await PushSub.find({ routeId: route.routeId });
     if (!subs.length) return;
@@ -37,22 +50,23 @@ async function triggerPushNotifications(bus: any, route: any) {
     const DEBOUNCE_MS = 5 * 60 * 1000;
 
     for (const sub of subs) {
-      // Use user's specific boarding stop, or fall back to next stop after current
       const userStopIndex = sub.boardingStop
         ? stops.findIndex((s: any) => s.name === sub.boardingStop)
-        : stops.findIndex((s: any) => s.order > stops[currentStopIndex].order);
+        : nextStopIndex;
 
-      if (userStopIndex === -1 || userStopIndex <= currentStopIndex) continue;
+      if (userStopIndex === -1 || userStopIndex <= prevStopIndex) continue;
       const userStop = stops[userStopIndex];
 
-      // Chain ETA from current stop to user's stop using recorded segment times
+      // First segment: only count the remaining fraction of it
       let etaMinutes = 0;
-      for (let i = currentStopIndex; i < userStopIndex; i++) {
+      for (let i = prevStopIndex; i < userStopIndex; i++) {
         const recorded = await avgSegmentMinutes(route.routeId, stops[i].name, stops[i + 1].name);
-        if (recorded) {
-          etaMinutes += recorded;
+        const segMins = recorded ?? (stops[i + 1].expectedTime - stops[i].expectedTime);
+        if (i === prevStopIndex) {
+          // Subtract already-traveled portion of this segment
+          etaMinutes += segMins * (1 - progress);
         } else {
-          etaMinutes += stops[i + 1].expectedTime - stops[i].expectedTime;
+          etaMinutes += segMins;
         }
       }
 
