@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import { Bus, Route, PushSub } from '@/models';
+import { Bus, Route, PushSub, TripHistory } from '@/models';
 import { haversine, recordSegment } from '@/lib/ml/etaPredictor';
 import webpush from 'web-push';
 
@@ -12,35 +12,50 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   );
 }
 
+async function avgSegmentMinutes(routeId: string, fromStop: string, toStop: string): Promise<number | null> {
+  const docs = await TripHistory.find({ routeId, fromStop, toStop }).sort({ recordedAt: -1 }).limit(30).lean();
+  if (!docs.length) return null;
+  let wSum = 0, wTotal = 0;
+  docs.forEach((d: any, i: number) => { const w = Math.exp(-i * 0.05); wSum += d.actualMinutes * w; wTotal += w; });
+  return wSum / wTotal;
+}
+
 async function triggerPushNotifications(bus: any, route: any) {
   try {
-    // Find the stop closest to the bus (current position)
+    const stops = route.stops.sort((a: any, b: any) => a.order - b.order);
+
+    // Find nearest stop by GPS
     let currentStopIndex = 0, minDist = Infinity;
-    route.stops.forEach((stop: any, i: number) => {
+    stops.forEach((stop: any, i: number) => {
       const d = haversine(bus.latitude, bus.longitude, stop.latitude, stop.longitude);
       if (d < minDist) { minDist = d; currentStopIndex = i; }
     });
 
-    const now = new Date();
-    const [sh, sm] = (route.startTime || '08:00').split(':').map(Number);
-    const startTime = new Date(now); startTime.setHours(sh, sm, 0, 0);
-    const elapsed = Math.max(0, (now.getTime() - startTime.getTime()) / 60000);
-
-    // Get all subscribers on this route
     const subs = await PushSub.find({ routeId: route.routeId });
     if (!subs.length) return;
 
-    const DEBOUNCE_MS = 5 * 60 * 1000; // don't re-notify within 5 min
+    const DEBOUNCE_MS = 5 * 60 * 1000;
 
     for (const sub of subs) {
-      // Find which stop this user is boarding at
-      const userStop = route.stops.find((s: any) => s.order > currentStopIndex + 1);
-      if (!userStop) continue;
+      // Find the user's boarding stop (first upcoming stop after current)
+      const userStopIndex = stops.findIndex((s: any) => s.order > stops[currentStopIndex].order);
+      if (userStopIndex === -1) continue;
+      const userStop = stops[userStopIndex];
 
-      const etaMinutes = Math.max(0, userStop.expectedTime - elapsed);
+      // Chain ETA from current stop to user's stop using recorded segment times
+      let etaMinutes = 0;
+      for (let i = currentStopIndex; i < userStopIndex; i++) {
+        const recorded = await avgSegmentMinutes(route.routeId, stops[i].name, stops[i + 1].name);
+        if (recorded) {
+          etaMinutes += recorded;
+        } else {
+          etaMinutes += stops[i + 1].expectedTime - stops[i].expectedTime;
+        }
+      }
+
+      etaMinutes = Math.max(0, Math.round(etaMinutes));
       const threshold = sub.notifyBefore ?? 10;
 
-      // Notify if ETA is within threshold and we haven't notified recently
       if (etaMinutes <= threshold && etaMinutes > 0) {
         const lastNotified = sub.notifiedAt ? new Date(sub.notifiedAt).getTime() : 0;
         if (Date.now() - lastNotified < DEBOUNCE_MS) continue;
@@ -49,8 +64,8 @@ async function triggerPushNotifications(bus: any, route: any) {
           await webpush.sendNotification(
             sub.subscription,
             JSON.stringify({
-              title: `🚌 Bus ${bus.busNumber} is ${Math.round(etaMinutes)} min away`,
-              body: `Arriving at ${userStop.name} in ~${Math.round(etaMinutes)} minutes. Head to your stop!`,
+              title: `🚌 Bus ${bus.busNumber} is ${etaMinutes} min away`,
+              body: `Arriving at ${userStop.name} in ~${etaMinutes} minutes. Head to your stop!`,
               url: '/live-track',
             })
           );
