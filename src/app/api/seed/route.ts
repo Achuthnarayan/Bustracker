@@ -18,7 +18,9 @@ const ROUTES = [
       { name: 'Athani',                                    order: 5, expectedTime: 42, latitude: 10.156829, longitude: 76.355009 },
       { name: 'Angamaly',                                  order: 6, expectedTime: 52, latitude: 10.191493, longitude: 76.386732 },
       { name: 'Karukutty',                                 order: 7, expectedTime: 63, latitude: 10.236605, longitude: 76.373882 },
-      { name: 'SCMS School of Engineering and Technology', order: 8, expectedTime: 73, latitude: 10.268519, longitude: 76.400080 },
+      { name: 'Karukutty Junction',                        order: 8, expectedTime: 67, latitude: 10.260750, longitude: 76.390552 },
+      { name: 'Palissery',                                 order: 9, expectedTime: 70, latitude: 10.265200, longitude: 76.400708 },
+      { name: 'SCMS School of Engineering and Technology', order: 10, expectedTime: 73, latitude: 10.268519, longitude: 76.400080 },
     ],
   },
   {
