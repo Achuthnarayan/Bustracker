@@ -78,6 +78,23 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
     const segTotalDist = haversine(stops[prevStopIndex].latitude, stops[prevStopIndex].longitude, stops[nextStopIndex].latitude, stops[nextStopIndex].longitude);
     const segProgress = hasGPS && segTotalDist > 0 ? Math.min(1, distFromPrev / segTotalDist) : 0;
 
+    // ── Delay due to being stuck (block/traffic) ──────────────────────────────
+    // If bus speed is 0 or very low for a while, add the extra time already spent
+    // in this segment beyond what the recorded average would expect
+    const busSpeed = bus.speed || 0;
+    const isStuck = busSpeed < 2; // less than 2 km/h = effectively stopped
+    // Time already spent in current segment (since last GPS update is too short;
+    // use distFromPrev / expected_speed as proxy for time already consumed)
+    let extraDelayMins = 0;
+    if (isStuck && hasGPS) {
+      // How long has the bus been at this position? Use lastUpdate staleness
+      const secsSinceUpdate = (Date.now() - new Date(bus.lastUpdate).getTime()) / 1000;
+      // If GPS is fresh (< 30s) but speed=0, estimate delay from position progress vs expected
+      // Expected time to reach current position = segProgress × segMins
+      // We'll add this after computing segMins below
+      extraDelayMins = Math.max(0, secsSinceUpdate / 60 - 0.5); // subtract 30s grace
+    }
+
     // currentStopIndex = prevStop (bus has passed it, heading to nextStop)
     const currentStopIndex = prevStopIndex;
 
@@ -95,11 +112,16 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
         result.push({ ...stop.toObject(), status: 'passed', etaMinutes: 0, etaFormatted: 'Passed', arrivalTime: null, confidence: null });
 
       } else if (i === nextStopIndex) {
-        // First upcoming stop — subtract already-traveled portion of this segment
+        // First upcoming stop — subtract already-traveled portion, add stuck delay
         const fromStop = stops[currentStopIndex].name;
         const recorded = await avgSegmentMinutes(route.routeId, fromStop, stop.name);
         const segMins = recorded ?? (stop.expectedTime - stops[currentStopIndex].expectedTime);
-        const remainingMins = segMins * (1 - segProgress);
+        // Position-based remaining time
+        const positionRemaining = segMins * (1 - segProgress);
+        // If stuck, remaining = max(position-based, extra time already wasted)
+        const remainingMins = isStuck
+          ? Math.max(positionRemaining, positionRemaining + extraDelayMins)
+          : positionRemaining;
         chainTime = new Date(chainTime.getTime() + remainingMins * 60000);
         const etaMs = chainTime.getTime() - Date.now();
         result.push({
