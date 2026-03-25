@@ -297,11 +297,11 @@ export default function OperatorDashboard() {
           </div>
         )}
 
-        {/* ── Emergency Alert ─────────────────────────────────── */}
+        {/* Ã¢â€â‚¬Ã¢â€â‚¬ Emergency Alert Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
         <p className="sec-label" style={{ marginTop: 28 }}>Emergency Alert</p>
         <div style={{ background: '#FFF7ED', border: '1.5px solid #FED7AA', borderRadius: 16, padding: 20, marginBottom: 20 }}>
           <div style={{ fontSize: 13, color: '#92400E', fontWeight: 600, marginBottom: 12 }}>
-            🚨 Send an emergency message to all passengers
+            Ã°Å¸Å¡Â¨ Send an emergency message to all passengers
           </div>
           <textarea
             value={alertMsg}
@@ -321,7 +321,7 @@ export default function OperatorDashboard() {
             onClick={sendAlert}
             style={{ background: '#DC2626', color: '#fff', fontSize: 13, width: '100%' }}
           >
-            {alertLoading ? <><span className="spinner" /> Sending...</> : '🚨 Send Emergency Alert'}
+            {alertLoading ? <><span className="spinner" /> Sending...</> : 'Ã°Å¸Å¡Â¨ Send Emergency Alert'}
           </button>
         </div>
 
@@ -333,7 +333,7 @@ export default function OperatorDashboard() {
               {activeAlerts.map((a: any) => (
                 <div key={a._id} style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{ fontSize: 13, color: '#991B1B', flex: 1 }}>{a.message}</div>
-                  <button onClick={() => dismissAlert(a._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
+                  <button onClick={() => dismissAlert(a._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 18, lineHeight: 1, padding: 0 }}>Ãƒâ€”</button>
                 </div>
               ))}
             </div>
@@ -341,13 +341,6 @@ export default function OperatorDashboard() {
         )}
 
         <button className="btn btn-secondary" onClick={logout}>Logout</button>
-
-        <p className="sec-label" style={{ marginTop: 28 }}>ESP32 GPS Tracker Setup</p>
-        <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 20 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>📡 Connect ESP32 to your hotspot</div>
-          <a href='http://192.168.4.1' target='_blank' rel='noopener noreferrer' style={{ display: 'block', marginTop: 8, background: '#4F46E5', color: '#fff', borderRadius: 12, padding: '13px 0', textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>📶 Open ESP32 Setup Page</a>
-          <div style={{ marginTop: 10, fontSize: 11, color: '#92400E', background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: 10, padding: '10px 14px' }}>Connect phone to BusTracker-BUS01 hotspot first, then tap above.</div>
-        </div>
       </div>
 
       {toast && <Toast message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
