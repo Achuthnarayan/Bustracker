@@ -150,7 +150,15 @@ export default function LiveTrackMap({ routeId }: { routeId?: string }) {
 
   function updateBusMarker(L: any, bus: any) {
     if (!mapRef.current) return;
-    const color = bus.status === 'Active' ? (ROUTE_COLORS[bus.route] || '#F97316') : '#94A3B8';
+    // Only show bus on map when trip is active
+    if (bus.status !== 'Active') {
+      if (markersRef.current[bus.busNumber]) {
+        markersRef.current[bus.busNumber].remove();
+        delete markersRef.current[bus.busNumber];
+      }
+      return;
+    }
+    const color = ROUTE_COLORS[bus.route] || '#F97316';
     const icon = L.divIcon({
       className: '',
       html: `<div style="background:${color};width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.3);">🚌</div>`,

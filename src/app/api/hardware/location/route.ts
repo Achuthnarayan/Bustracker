@@ -105,7 +105,10 @@ export async function POST(req: Request) {
 
     let bus = await Bus.findOne({ busNumber: busId });
     if (bus) {
-      // ML: record segment when bus crosses within 80m of a stop
+      // Block GPS updates if operator hasn't started the trip
+      if (bus.status === 'Offline') {
+        return NextResponse.json({ message: 'Trip not started. Operator must start trip first.' }, { status: 403 });
+      }
       if (bus.route && bus.route !== 'Unassigned') {
         const route = await Route.findOne({ routeId: bus.route });
         if (route) {
@@ -132,7 +135,8 @@ export async function POST(req: Request) {
         if (route) triggerPushNotifications(bus, route);
       }
     } else {
-      bus = await Bus.create({ busNumber: busId, route: 'Unassigned', latitude, longitude, speed: speed || 0, heading: heading || 0, status: 'Active' });
+      // Bus not found in DB — don't create it, operator must be seeded first
+      return NextResponse.json({ message: 'Bus not registered. Contact admin.' }, { status: 404 });
     }
     return NextResponse.json({ message: 'Location updated', busId, timestamp: bus.lastUpdate });
   } catch (err: any) {
