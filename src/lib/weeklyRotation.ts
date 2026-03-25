@@ -12,9 +12,9 @@ export function getISOWeek(date: Date): number {
 
 // The fixed bus pool — same order as seed
 export const BUS_POOL = [
-  { busNumber: 'KL07-BUS01', route: 'ROUTE_1', routeName: 'Route 1 – Angamaly → SSET' },
-  { busNumber: 'KL07-BUS02', route: 'ROUTE_2', routeName: 'Route 2 – Chalakudy → SSET' },
-  { busNumber: 'KL07-BUS03', route: 'ROUTE_3', routeName: 'Route 3 – Aluva → SSET' },
+  { busNumber: 'KL07-BUS01', route: 'ROUTE_1', routeName: 'Route 1 – Koratty → SCMS' },
+  { busNumber: 'KL07-BUS02', route: 'ROUTE_2', routeName: 'Route 2 – Kaloor → SCMS' },
+  { busNumber: 'KL07-BUS03', route: 'ROUTE_3', routeName: 'Route 3 – Thrissur → SCMS' },
   { busNumber: 'KL07-BUS04', route: 'ROUTE_4', routeName: 'Route 4 – Perumbavoor → SSET' },
   { busNumber: 'KL07-BUS05', route: 'ROUTE_5', routeName: 'Route 5 – Kalady → SSET' },
   { busNumber: 'KL07-BUS06', route: 'ROUTE_6', routeName: 'Route 6 – North Paravur → SSET' },
