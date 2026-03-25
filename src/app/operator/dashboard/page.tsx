@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, getToken } from '@/hooks/useAuth';
@@ -341,6 +341,13 @@ export default function OperatorDashboard() {
         )}
 
         <button className="btn btn-secondary" onClick={logout}>Logout</button>
+
+        <p className="sec-label" style={{ marginTop: 28 }}>ESP32 GPS Tracker Setup</p>
+        <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 20 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>📡 Connect ESP32 to your hotspot</div>
+          <a href='http://192.168.4.1' target='_blank' rel='noopener noreferrer' style={{ display: 'block', marginTop: 8, background: '#4F46E5', color: '#fff', borderRadius: 12, padding: '13px 0', textAlign: 'center', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>📶 Open ESP32 Setup Page</a>
+          <div style={{ marginTop: 10, fontSize: 11, color: '#92400E', background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: 10, padding: '10px 14px' }}>Connect phone to BusTracker-BUS01 hotspot first, then tap above.</div>
+        </div>
       </div>
 
       {toast && <Toast message={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
