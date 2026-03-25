@@ -186,8 +186,8 @@ export default function OperatorDashboard() {
   const eveningEarly = assignment?.eveningEarliestStart || '15:45';
   const morningWait  = mounted ? minutesUntil(morningTime) : 0;
   const eveningWait  = mounted ? minutesUntil(eveningTime) : 0;
-  const morningLocked = mounted && morningWait > 0;
-  const eveningLocked = mounted && eveningWait > 0;
+  const morningLocked = false;
+  const eveningLocked = false;
 
   return (
     <div className="page-shell">
@@ -297,11 +297,11 @@ export default function OperatorDashboard() {
           </div>
         )}
 
-        {/* Ã¢â€â‚¬Ã¢â€â‚¬ Emergency Alert Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
+        {/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Emergency Alert ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */}
         <p className="sec-label" style={{ marginTop: 28 }}>Emergency Alert</p>
         <div style={{ background: '#FFF7ED', border: '1.5px solid #FED7AA', borderRadius: 16, padding: 20, marginBottom: 20 }}>
           <div style={{ fontSize: 13, color: '#92400E', fontWeight: 600, marginBottom: 12 }}>
-            Ã°Å¸Å¡Â¨ Send an emergency message to all passengers
+            ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â¨ Send an emergency message to all passengers
           </div>
           <textarea
             value={alertMsg}
@@ -321,7 +321,7 @@ export default function OperatorDashboard() {
             onClick={sendAlert}
             style={{ background: '#DC2626', color: '#fff', fontSize: 13, width: '100%' }}
           >
-            {alertLoading ? <><span className="spinner" /> Sending...</> : 'Ã°Å¸Å¡Â¨ Send Emergency Alert'}
+            {alertLoading ? <><span className="spinner" /> Sending...</> : 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â¨ Send Emergency Alert'}
           </button>
         </div>
 
@@ -333,7 +333,7 @@ export default function OperatorDashboard() {
               {activeAlerts.map((a: any) => (
                 <div key={a._id} style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{ fontSize: 13, color: '#991B1B', flex: 1 }}>{a.message}</div>
-                  <button onClick={() => dismissAlert(a._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 18, lineHeight: 1, padding: 0 }}>Ãƒâ€”</button>
+                  <button onClick={() => dismissAlert(a._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 18, lineHeight: 1, padding: 0 }}>ÃƒÆ’Ã¢â‚¬â€</button>
                 </div>
               ))}
             </div>
