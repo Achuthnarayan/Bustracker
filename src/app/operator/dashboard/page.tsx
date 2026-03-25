@@ -7,43 +7,16 @@ import Toast from '@/components/Toast';
 type TripState = 'idle' | 'active' | 'ended';
 type TripType = 'morning' | 'evening';
 
-function getISTMinutes(): number {
-  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
-  return ist.getUTCHours() * 60 + ist.getUTCMinutes();
-}
-
-function minutesUntil(time: string): number {
-  const [h, m] = time.split(':').map(Number);
-  const earliest = h * 60 + m - 15;
-  return Math.max(0, earliest - getISTMinutes());
-}
-
-function fmtCountdown(min: number): string {
-  if (min <= 0) return '';
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-function TripCard({ label, subtitle, locked, wait, scheduledTime, earliestTime, loading, onStart, color, bgColor, borderColor }: {
-  label: string; subtitle: string; locked: boolean; wait: number;
-  scheduledTime: string; earliestTime: string; loading: boolean;
+function TripCard({ label, subtitle, loading, onStart, color, bgColor, borderColor }: {
+  label: string; subtitle: string; loading: boolean;
   onStart: () => void; color: string; bgColor: string; borderColor: string;
 }) {
   return (
-    <div style={{ background: bgColor, border: `1.5px solid ${locked ? '#FCA5A5' : borderColor}`, borderRadius: 16, padding: 20 }}>
+    <div style={{ background: bgColor, border: `1.5px solid ${borderColor}`, borderRadius: 16, padding: 20 }}>
       <div style={{ fontSize: 15, fontWeight: 700, color, marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>{subtitle}</div>
-      {locked && (
-        <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 10, padding: '10px 14px', marginBottom: 14, fontSize: 12, color: '#991B1B' }}>
-          <div style={{ fontWeight: 700 }}>Scheduled: {scheduledTime}</div>
-          <div>Earliest start: <strong>{earliestTime}</strong></div>
-          <div style={{ marginTop: 4, fontWeight: 700 }}>Wait: {fmtCountdown(wait)}</div>
-        </div>
-      )}
-      <button className="btn btn-primary" disabled={loading || locked} onClick={onStart}
-        style={locked ? { opacity: 0.4, cursor: 'not-allowed', fontSize: 13 } : { fontSize: 13 }}>
-        {loading ? <><span className="spinner" /> Starting...</> : locked ? `Opens at ${earliestTime}` : `Start ${label}`}
+      <button className="btn btn-primary" disabled={loading} onClick={onStart} style={{ fontSize: 13 }}>
+        {loading ? <><span className="spinner" /> Starting...</> : `Start ${label}`}
       </button>
     </div>
   );
@@ -52,7 +25,6 @@ function TripCard({ label, subtitle, locked, wait, scheduledTime, earliestTime, 
 export default function OperatorDashboard() {
   useAuth('operator');
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [assignment, setAssignment] = useState<any>(null);
   const [tripState, setTripState] = useState<TripState>('idle');
@@ -63,19 +35,24 @@ export default function OperatorDashboard() {
   const [alertMsg, setAlertMsg] = useState('');
   const [alertLoading, setAlertLoading] = useState(false);
   const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
-  const [, forceUpdate] = useState(0);
   const watchRef = useRef<number | null>(null);
   const timerRef = useRef<any>(null);
 
   useEffect(() => {
-    setMounted(true);
     const u = localStorage.getItem('bus_tracker_user');
     if (u) setUser(JSON.parse(u));
     loadAssignment();
-    timerRef.current = setInterval(() => forceUpdate(n => n + 1), 30000);
     loadMyAlerts();
+    timerRef.current = setInterval(loadMyAlerts, 30000);
     return () => { stopGPS(); clearInterval(timerRef.current); };
   }, []);
+
+  async function loadAssignment() {
+    try {
+      const res = await fetch('/api/operator/my-assignment', { headers: { Authorization: `Bearer ${getToken()}` } });
+      if (res.ok) setAssignment(await res.json());
+    } catch {}
+  }
 
   async function loadMyAlerts() {
     try {
@@ -116,13 +93,6 @@ export default function OperatorDashboard() {
     } catch {}
   }
 
-  async function loadAssignment() {
-    try {
-      const res = await fetch('/api/operator/my-assignment', { headers: { Authorization: `Bearer ${getToken()}` } });
-      if (res.ok) setAssignment(await res.json());
-    } catch {}
-  }
-
   function startGPS(busNumber: string) {
     if (!navigator.geolocation) return;
     watchRef.current = navigator.geolocation.watchPosition(
@@ -156,8 +126,11 @@ export default function OperatorDashboard() {
       if (!res.ok) throw new Error(data.message);
       setTripState('active'); setActiveTripType(tripType);
       setToast({ msg: `${tripType === 'evening' ? 'Evening' : 'Morning'} trip started - ${data.busNumber}`, type: 'success' });
-      navigator.geolocation.getCurrentPosition(() => startGPS(data.busNumber),
-        () => setToast({ msg: 'Location permission denied.', type: 'error' }), { enableHighAccuracy: true, timeout: 10000 });
+      navigator.geolocation.getCurrentPosition(
+        () => startGPS(data.busNumber),
+        () => setToast({ msg: 'Location permission denied.', type: 'error' }),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
     } catch (err: any) { setToast({ msg: err.message || 'Failed to start trip', type: 'error' }); }
     finally { setActionLoading(false); }
   }
@@ -180,14 +153,8 @@ export default function OperatorDashboard() {
     localStorage.clear(); router.push('/operator/login');
   }
 
-  const morningTime  = assignment?.startTime            || '08:05';
-  const eveningTime  = assignment?.eveningStartTime     || '16:00';
-  const morningEarly = assignment?.earliestStart        || '07:50';
-  const eveningEarly = assignment?.eveningEarliestStart || '15:45';
-  const morningWait  = mounted ? minutesUntil(morningTime) : 0;
-  const eveningWait  = mounted ? minutesUntil(eveningTime) : 0;
-  const morningLocked = false;
-  const eveningLocked = false;
+  const morningTime = assignment?.startTime || '08:10';
+  const eveningTime = assignment?.eveningStartTime || '16:00';
 
   return (
     <div className="page-shell">
@@ -229,20 +196,18 @@ export default function OperatorDashboard() {
           )}
         </div>
 
-        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 12, padding: '10px 14px', marginBottom: 20, fontSize: 12, color: '#1e40af', display: 'flex', gap: 8 }}>
-          <span>Assignments rotate every Monday. Next: <strong>{assignment?.nextRotation || '-'}</strong></span>
+        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 12, padding: '10px 14px', marginBottom: 20, fontSize: 12, color: '#1e40af' }}>
+          Assignments rotate every Monday. Next: <strong>{assignment?.nextRotation || '-'}</strong>
         </div>
 
         <p className="sec-label">Trip Control</p>
 
         {tripState === 'idle' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-            <TripCard label="Morning Trip" subtitle={'Departs ' + morningTime + ' - arrives SSET by 8:40 AM'}
-              locked={morningLocked} wait={morningWait} scheduledTime={morningTime} earliestTime={morningEarly}
+            <TripCard label="Morning Trip" subtitle={`Departs ${morningTime} · arrives SSET by 8:40 AM`}
               loading={actionLoading} onStart={() => handleStartTrip('morning')}
               color="#1e40af" bgColor="#EFF6FF" borderColor="#BFDBFE" />
-            <TripCard label="Evening Trip" subtitle={'Departs SSET at ' + eveningTime + ' - return home'}
-              locked={eveningLocked} wait={eveningWait} scheduledTime={eveningTime} earliestTime={eveningEarly}
+            <TripCard label="Evening Trip" subtitle={`Departs SSET at ${eveningTime} · return home`}
               loading={actionLoading} onStart={() => handleStartTrip('evening')}
               color="#065F46" bgColor="#F0FDF4" borderColor="#A7F3D0" />
           </div>
@@ -259,7 +224,7 @@ export default function OperatorDashboard() {
               </div>
               {location && (
                 <div style={{ fontSize: 12, color: '#065F46', fontFamily: 'monospace', background: 'rgba(16,185,129,0.1)', borderRadius: 8, padding: '8px 12px' }}>
-                  {location.latitude?.toFixed(5)}, {location.longitude?.toFixed(5)} - {location.speed} km/h
+                  {location.latitude?.toFixed(5)}, {location.longitude?.toFixed(5)} · {location.speed} km/h
                 </div>
               )}
             </div>
@@ -271,7 +236,7 @@ export default function OperatorDashboard() {
 
         {tripState === 'ended' && (
           <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 16, padding: 20, marginBottom: 20, textAlign: 'center' }}>
-            <div style={{ fontSize: 32, marginBottom: 10 }}>OK</div>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>✅</div>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Trip Completed</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 18 }}>Bus has been marked offline.</div>
             <button className="btn btn-primary" onClick={() => setTripState('idle')}>Start New Trip</button>
@@ -297,35 +262,24 @@ export default function OperatorDashboard() {
           </div>
         )}
 
-        {/* ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Emergency Alert ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ */}
         <p className="sec-label" style={{ marginTop: 28 }}>Emergency Alert</p>
         <div style={{ background: '#FFF7ED', border: '1.5px solid #FED7AA', borderRadius: 16, padding: 20, marginBottom: 20 }}>
           <div style={{ fontSize: 13, color: '#92400E', fontWeight: 600, marginBottom: 12 }}>
-            ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â¨ Send an emergency message to all passengers
+            🚨 Send an emergency message to all passengers
           </div>
           <textarea
             value={alertMsg}
             onChange={e => setAlertMsg(e.target.value)}
             placeholder="e.g. Bus breakdown near Edapally, expect 20 min delay..."
             rows={3}
-            style={{
-              width: '100%', borderRadius: 10, border: '1.5px solid #FED7AA',
-              padding: '10px 12px', fontSize: 13, resize: 'none',
-              background: '#fff', color: '#1a1a1a', outline: 'none',
-              boxSizing: 'border-box', marginBottom: 12,
-            }}
+            style={{ width: '100%', borderRadius: 10, border: '1.5px solid #FED7AA', padding: '10px 12px', fontSize: 13, resize: 'none', background: '#fff', color: '#1a1a1a', outline: 'none', boxSizing: 'border-box', marginBottom: 12 }}
           />
-          <button
-            className="btn"
-            disabled={alertLoading || !alertMsg.trim()}
-            onClick={sendAlert}
-            style={{ background: '#DC2626', color: '#fff', fontSize: 13, width: '100%' }}
-          >
-            {alertLoading ? <><span className="spinner" /> Sending...</> : 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â¨ Send Emergency Alert'}
+          <button className="btn" disabled={alertLoading || !alertMsg.trim()} onClick={sendAlert}
+            style={{ background: '#DC2626', color: '#fff', fontSize: 13, width: '100%' }}>
+            {alertLoading ? <><span className="spinner" /> Sending...</> : '🚨 Send Emergency Alert'}
           </button>
         </div>
 
-        {/* Active alerts sent by this operator */}
         {activeAlerts.length > 0 && (
           <>
             <p className="sec-label">Active Alerts</p>
@@ -333,7 +287,7 @@ export default function OperatorDashboard() {
               {activeAlerts.map((a: any) => (
                 <div key={a._id} style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{ fontSize: 13, color: '#991B1B', flex: 1 }}>{a.message}</div>
-                  <button onClick={() => dismissAlert(a._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 18, lineHeight: 1, padding: 0 }}>ÃƒÆ’Ã¢â‚¬â€</button>
+                  <button onClick={() => dismissAlert(a._id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#DC2626', fontSize: 18, lineHeight: 1, padding: 0 }}>×</button>
                 </div>
               ))}
             </div>
