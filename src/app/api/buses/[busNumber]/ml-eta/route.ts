@@ -57,14 +57,19 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
     let minSegDist = Infinity;
 
     if (!hasGPS) {
-      // Offline: fall back to schedule time
-      const scheduleTime = isEvening ? (route.eveningStartTime || '16:00') : (route.startTime || '08:10');
-      const [sh2, sm2] = scheduleTime.split(':').map(Number);
-      const now2 = new Date();
-      const start2 = new Date(now2); start2.setHours(sh2, sm2, 0, 0);
-      const elapsed2 = Math.max(0, (now2.getTime() - start2.getTime()) / 60000);
-      for (let i = stops.length - 1; i >= 0; i--) {
-        if (elapsed2 >= stops[i].expectedTime) { prevStopIndex = i; break; }
+      if (effectiveStatus === 'Active') {
+        // Trip started but no GPS yet — assume bus is at first stop, chain from now
+        prevStopIndex = 0;
+      } else {
+        // Offline: fall back to schedule time
+        const scheduleTime = isEvening ? (route.eveningStartTime || '16:00') : (route.startTime || '08:10');
+        const [sh2, sm2] = scheduleTime.split(':').map(Number);
+        const now2 = new Date();
+        const start2 = new Date(now2); start2.setHours(sh2, sm2, 0, 0);
+        const elapsed2 = Math.max(0, (now2.getTime() - start2.getTime()) / 60000);
+        for (let i = stops.length - 1; i >= 0; i--) {
+          if (elapsed2 >= stops[i].expectedTime) { prevStopIndex = i; break; }
+        }
       }
     } else {
       for (let i = 0; i < stops.length - 1; i++) {
