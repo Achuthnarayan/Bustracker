@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 const features = [
   { icon: '📍', title: 'Live GPS Tracking',     desc: 'See your bus on an interactive map, updated every 5 seconds via ESP32 hardware.' },
-  { icon: '🤖', title: 'ML Arrival Estimates',  desc: 'Smart predictions that learn from real trip history — like "Where is my Train".' },
+  { icon: '⏱️', title: 'Arrival Estimates',      desc: 'Real-time predictions based on live GPS position and recorded travel times between stops.' },
   { icon: '🎫', title: 'Digital Tickets',        desc: 'Buy passes online via Razorpay — UPI, cards, wallets. No queues, no paper.' },
   { icon: '🗺️', title: 'Route Info',             desc: 'Browse all routes, stops, timings, and pricing before you board.' },
   { icon: '🚍', title: 'Operator Dashboard',     desc: 'Drivers manage their route and share live GPS from phone or ESP32.' },
