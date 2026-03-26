@@ -137,8 +137,61 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer style={s.footer}>
-        © 2024 BusTracker · College Bus Real-Time Tracking System
+      <footer style={{ background: '#1e3a8a', color: '#fff', padding: '48px 5% 24px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 40, marginBottom: 36 }}>
+
+          {/* Quick Links */}
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 18 }}>Quick Links</div>
+            {[
+              { label: 'Home', href: '/' },
+              { label: 'About Us', href: '#about' },
+              { label: 'Sign In', href: '/login' },
+              { label: 'Sign Up', href: '/signup' },
+              { label: 'Book Ticket', href: '/login' },
+              { label: 'Operator Login', href: '/operator/login' },
+            ].map(l => (
+              <div key={l.label} style={{ marginBottom: 10 }}>
+                <Link href={l.href} style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, textDecoration: 'none', fontWeight: 500 }}>{l.label}</Link>
+              </div>
+            ))}
+          </div>
+
+          {/* Contact Us */}
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 18 }}>Contact Us</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 2 }}>
+              <div style={{ fontWeight: 600, color: '#fff', marginBottom: 4 }}>Transport Office</div>
+              <div>📞 +91 484 2450330</div>
+              <div>📞 +91 484 2439032</div>
+              <div style={{ marginTop: 12, fontWeight: 600, color: '#fff' }}>Email</div>
+              <div>✉️ transport@sset.ac.in</div>
+              <div style={{ marginTop: 12, fontWeight: 600, color: '#fff' }}>Technical Support</div>
+              <div>✉️ support@sset.ac.in</div>
+            </div>
+          </div>
+
+          {/* About / College */}
+          <div id="about">
+            <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 18 }}>About Us</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8 }}>
+              <div style={{ fontWeight: 700, color: '#fff', marginBottom: 6 }}>SCMS School of Engineering and Technology</div>
+              <div>Vidya Nagar, Palissery,</div>
+              <div>Karukutty, Ernakulam,</div>
+              <div>Kerala – 683 582</div>
+              <div style={{ marginTop: 12 }}>
+                The SSET Campus Bus Tracker is a real-time GPS tracking system built for students of SCMS School of Engineering and Technology, providing live bus location, digital ticketing, and smart arrival notifications.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom bar */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+          <span>© 2024 SSET BusTracker · SCMS School of Engineering and Technology, Karukutty</span>
+          <span>Built for students, by students</span>
+        </div>
       </footer>
     </div>
   );
