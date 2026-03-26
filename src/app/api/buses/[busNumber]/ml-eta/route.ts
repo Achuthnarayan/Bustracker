@@ -21,7 +21,8 @@ async function avgSegmentMinutes(routeId: string, fromStop: string, toStop: stri
 }
 
 function fmtTime(date: Date): string {
-  return date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
+  // Force IST (UTC+5:30)
+  return date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
 }
 
 function fmtEta(ms: number): string {
@@ -47,8 +48,10 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
     // Evening trip = reverse direction (SCMS → Koratty)
     const isEvening = bus.tripType === 'evening';
     const stops = isEvening
-      ? [...route.stops].sort((a: any, b: any) => a.order - b.order).reverse()
-      : [...route.stops].sort((a: any, b: any) => a.order - b.order);
+      ? [...route.stops].sort((a: any, b: any) => a.order - b.order).reverse().map((s: any, i: number) => ({
+          ...s.toObject(), order: i + 1, expectedTime: i * Math.round(route.totalDuration / (route.stops.length - 1))
+        }))
+      : [...route.stops].sort((a: any, b: any) => a.order - b.order).map((s: any) => s.toObject());
 
     const hasGPS = bus.latitude && bus.longitude && effectiveStatus === 'Active';
 
