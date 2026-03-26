@@ -96,7 +96,7 @@ const alertSchema = new Schema({
   busNumber:  { type: String, required: true },
   operatorId: { type: String, required: true },
   active:     { type: Boolean, default: true },
-  expiresAt:  { type: Date, default: () => new Date(Date.now() + 2 * 60 * 60 * 1000) }, // 2hr TTL
+  expiresAt:  { type: Date, default: () => new Date(Date.now() + 24 * 60 * 60 * 1000) }, // 24hr TTL
 }, { timestamps: true });
 
 export const User       = mongoose.models.User       || mongoose.model('User', userSchema);
