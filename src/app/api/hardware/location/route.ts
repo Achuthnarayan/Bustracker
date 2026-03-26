@@ -22,10 +22,19 @@ async function avgSegmentMinutes(routeId: string, fromStop: string, toStop: stri
 
 async function triggerPushNotifications(bus: any, route: any) {
   try {
-    let stops = route.stops.sort((a: any, b: any) => a.order - b.order);
+    const rawStops = [...route.stops].sort((a: any, b: any) => a.order - b.order).map((s: any) => ({
+      name: s.name, order: s.order, expectedTime: s.expectedTime,
+      latitude: s.latitude, longitude: s.longitude,
+    }));
 
-    // Reverse for evening trip (SCMS → Koratty)
-    if (bus.tripType === 'evening') stops = [...stops].reverse();
+    // Reverse for evening trip and recalculate expectedTime
+    const totalDuration = route.totalDuration || 30;
+    const stops = bus.tripType === 'evening'
+      ? [...rawStops].reverse().map((s, i) => ({
+          ...s, order: i + 1,
+          expectedTime: i === 0 ? 0 : Math.round((i / (rawStops.length - 1)) * totalDuration),
+        }))
+      : rawStops;
 
     // Find the two stops the bus is currently between (prevStop → nextStop)
     // by finding which segment the bus is closest to
