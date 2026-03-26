@@ -22,7 +22,10 @@ async function avgSegmentMinutes(routeId: string, fromStop: string, toStop: stri
 
 async function triggerPushNotifications(bus: any, route: any) {
   try {
-    const stops = route.stops.sort((a: any, b: any) => a.order - b.order);
+    let stops = route.stops.sort((a: any, b: any) => a.order - b.order);
+
+    // Reverse for evening trip (SCMS → Koratty)
+    if (bus.tripType === 'evening') stops = [...stops].reverse();
 
     // Find the two stops the bus is currently between (prevStop → nextStop)
     // by finding which segment the bus is closest to
@@ -118,11 +121,14 @@ export async function POST(req: Request) {
       if (bus.route && bus.route !== 'Unassigned') {
         const route = await Route.findOne({ routeId: bus.route });
         if (route) {
-          for (let i = 1; i < route.stops.length; i++) {
-            const stop = route.stops[i];
+          const orderedStops = bus.tripType === 'evening'
+            ? [...route.stops].sort((a: any, b: any) => b.order - a.order)
+            : [...route.stops].sort((a: any, b: any) => a.order - b.order);
+          for (let i = 1; i < orderedStops.length; i++) {
+            const stop = orderedStops[i];
             const distToStop = haversine(parseFloat(latitude), parseFloat(longitude), stop.latitude, stop.longitude);
             if (distToStop < 0.08) {
-              const prevStop = route.stops[i - 1];
+              const prevStop = orderedStops[i - 1];
               const prevDist = haversine(bus.latitude, bus.longitude, prevStop.latitude, prevStop.longitude);
               if (prevDist > 0.08) {
                 const elapsedMin = (Date.now() - new Date(bus.lastUpdate).getTime()) / 60000;
