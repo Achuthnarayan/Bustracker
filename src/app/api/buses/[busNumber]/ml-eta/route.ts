@@ -44,11 +44,11 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
     const route = await Route.findOne({ routeId: bus.route });
     if (!route) return NextResponse.json({ message: 'Route not found' }, { status: 404 });
 
-    const stops = route.stops.sort((a: any, b: any) => a.order - b.order);
-
     // Evening trip = reverse direction (SCMS → Koratty)
     const isEvening = bus.tripType === 'evening';
-    if (isEvening) stops.reverse();
+    const stops = isEvening
+      ? [...route.stops].sort((a: any, b: any) => a.order - b.order).reverse()
+      : [...route.stops].sort((a: any, b: any) => a.order - b.order);
 
     const hasGPS = bus.latitude && bus.longitude && effectiveStatus === 'Active';
 
@@ -58,7 +58,8 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
 
     if (!hasGPS) {
       // Offline: fall back to schedule time
-      const [sh2, sm2] = route.startTime.split(':').map(Number);
+      const scheduleTime = isEvening ? (route.eveningStartTime || '16:00') : (route.startTime || '08:10');
+      const [sh2, sm2] = scheduleTime.split(':').map(Number);
       const now2 = new Date();
       const start2 = new Date(now2); start2.setHours(sh2, sm2, 0, 0);
       const elapsed2 = Math.max(0, (now2.getTime() - start2.getTime()) / 60000);
