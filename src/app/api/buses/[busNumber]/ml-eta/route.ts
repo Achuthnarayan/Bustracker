@@ -47,11 +47,16 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
 
     // Evening trip = reverse direction (SCMS → Koratty)
     const isEvening = bus.tripType === 'evening';
+    const rawStops = [...route.stops].sort((a: any, b: any) => a.order - b.order).map((s: any) => ({
+      name: s.name, order: s.order, expectedTime: s.expectedTime,
+      latitude: s.latitude, longitude: s.longitude,
+    }));
     const stops = isEvening
-      ? [...route.stops].sort((a: any, b: any) => a.order - b.order).reverse().map((s: any, i: number) => ({
-          ...s.toObject(), order: i + 1, expectedTime: i * Math.round(route.totalDuration / (route.stops.length - 1))
+      ? rawStops.reverse().map((s, i) => ({
+          ...s, order: i + 1,
+          expectedTime: i === 0 ? 0 : Math.round((i / (rawStops.length - 1)) * (route.totalDuration || 30)),
         }))
-      : [...route.stops].sort((a: any, b: any) => a.order - b.order).map((s: any) => s.toObject());
+      : rawStops;
 
     const hasGPS = bus.latitude && bus.longitude && effectiveStatus === 'Active';
 
@@ -119,41 +124,33 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
       const stop = stops[i];
 
       if (i < currentStopIndex) {
-        result.push({ ...stop.toObject(), status: 'passed', etaMinutes: 0, etaFormatted: 'Passed', arrivalTime: null, confidence: null });
-
+        result.push({ ...stop, status: 'passed', etaMinutes: 0, etaFormatted: 'Passed', arrivalTime: null, confidence: null });
       } else if (i === currentStopIndex) {
-        result.push({ ...stop.toObject(), status: 'passed', etaMinutes: 0, etaFormatted: 'Passed', arrivalTime: null, confidence: null });
-
+        result.push({ ...stop, status: 'current', etaMinutes: 0, etaFormatted: 'Bus is here', arrivalTime: fmtTime(chainTime), confidence: null });
       } else if (i === nextStopIndex) {
-        // First upcoming stop — subtract already-traveled portion, add stuck delay
         const fromStop = stops[currentStopIndex].name;
         const recorded = await avgSegmentMinutes(route.routeId, fromStop, stop.name);
-        const segMins = recorded ?? (stop.expectedTime - stops[currentStopIndex].expectedTime);
-        // Position-based remaining time
+        const segMins = recorded ?? (stop.expectedTime - stops[currentStopIndex].expectedTime || 5);
         const positionRemaining = segMins * (1 - segProgress);
-        // If stuck, remaining = max(position-based, extra time already wasted)
-        const remainingMins = isStuck
-          ? Math.max(positionRemaining, positionRemaining + extraDelayMins)
-          : positionRemaining;
+        const remainingMins = isStuck ? Math.max(positionRemaining, positionRemaining + extraDelayMins) : positionRemaining;
         chainTime = new Date(chainTime.getTime() + remainingMins * 60000);
         const etaMs = chainTime.getTime() - Date.now();
         result.push({
-          ...stop.toObject(), status: 'upcoming',
+          ...stop, status: 'upcoming',
           etaMinutes: Math.max(0, Math.round(etaMs / 60000)),
           etaFormatted: fmtEta(etaMs),
           arrivalTime: fmtTime(chainTime),
           confidence: recorded ? 'recorded' : 'scheduled',
           segmentMins: Math.round(remainingMins),
         });
-
       } else {
         const fromStop = stops[i - 1].name;
         const recorded = await avgSegmentMinutes(route.routeId, fromStop, stop.name);
-        const segMins = recorded ?? (stop.expectedTime - stops[i - 1].expectedTime || 10);
+        const segMins = recorded ?? (stop.expectedTime - stops[i - 1].expectedTime || 5);
         chainTime = new Date(chainTime.getTime() + segMins * 60000);
         const etaMs = chainTime.getTime() - Date.now();
         result.push({
-          ...stop.toObject(), status: 'upcoming',
+          ...stop, status: 'upcoming',
           etaMinutes: Math.max(0, Math.round(etaMs / 60000)),
           etaFormatted: fmtEta(etaMs),
           arrivalTime: fmtTime(chainTime),
