@@ -23,6 +23,7 @@ const operatorSchema = new Schema({
 const busSchema = new Schema({
   busNumber: { type: String, required: true, unique: true },
   route:     { type: String, default: 'Unassigned' },
+  tripType:  { type: String, enum: ['morning', 'evening'], default: 'morning' },
   latitude:  { type: Number, default: 12.9716 },
   longitude: { type: Number, default: 77.5946 },
   speed:     { type: Number, default: 0 },

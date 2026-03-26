@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
     const bus = await Bus.findOneAndUpdate(
       { busNumber },
-      { status: 'Active', route, lastUpdate: new Date() },
+      { status: 'Active', route, tripType, lastUpdate: new Date() },
       { new: true, upsert: true }
     );
 

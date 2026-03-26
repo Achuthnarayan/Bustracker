@@ -46,6 +46,10 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
 
     const stops = route.stops.sort((a: any, b: any) => a.order - b.order);
 
+    // Evening trip = reverse direction (SCMS → Koratty)
+    const isEvening = bus.tripType === 'evening';
+    if (isEvening) stops.reverse();
+
     const hasGPS = bus.latitude && bus.longitude && effectiveStatus === 'Active';
 
     // ── Find current segment (bus is between prevStop and nextStop) ─────────
@@ -153,7 +157,7 @@ export async function GET(req: Request, { params }: { params: { busNumber: strin
     return NextResponse.json({
       busNumber: bus.busNumber,
       routeId: route.routeId,
-      routeName: route.name,
+      routeName: isEvening ? route.name.replace('→', '←').split('–')[0].trim() + ' – SCMS → Koratty' : route.name,
       currentStop: stops[currentStopIndex]?.name,
       speed: bus.speed,
       status: effectiveStatus,
