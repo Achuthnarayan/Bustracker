@@ -8,7 +8,18 @@ export async function GET(req: Request) {
   if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   await connectDB();
   const tickets = await Ticket.find({ userId: user.id }).sort({ purchaseDate: -1 });
-  return NextResponse.json({ tickets });
+
+  // Auto-expire Single tickets past their validUntil date
+  const now = new Date();
+  const result = await Promise.all(tickets.map(async (t) => {
+    if (t.status === 'Active' && t.ticketType === 'Single' && t.validUntil && new Date(t.validUntil) < now) {
+      t.status = 'Expired';
+      await t.save();
+    }
+    return t;
+  }));
+
+  return NextResponse.json({ tickets: result });
 }
 
 export async function POST(req: Request) {
@@ -17,11 +28,14 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const { ticketType, route, routeName, from, to, amount, paymentMethod } = await req.json();
+    const validUntil = ticketType === 'Single'
+      ? new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)   // Single: expires after 1 day
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);  // Monthly: expires after 30 days
+
     const ticket = await Ticket.create({
       ticketId: 'TKT' + Date.now(), userId: user.id,
       ticketType, route, routeName, from, to, amount, paymentMethod,
-      status: 'Active', purchaseDate: new Date(),
-      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      status: 'Active', purchaseDate: new Date(), validUntil,
     });
     return NextResponse.json({ ticket }, { status: 201 });
   } catch (err: any) {
