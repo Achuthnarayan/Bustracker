@@ -7,6 +7,7 @@ self.addEventListener('push', (event) => {
       badge: '/icon-192.png',
       tag: 'bus-alert',
       renotify: true,
+      vibrate: [300, 100, 300, 100, 300],
       data: { url: data.url || '/dashboard' },
     })
   );
