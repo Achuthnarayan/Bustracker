@@ -56,7 +56,7 @@ export async function predictETA(
 }
 
 export async function recordSegment(routeId: string, fromStop: string, toStop: string, actualMinutes: number) {
-  if (actualMinutes <= 0 || actualMinutes > 300) return;
+  if (actualMinutes < 1 || actualMinutes > 300) return; // ignore < 1 min (stationary test data)
   const now = new Date();
   await TripHistory.create({
     routeId, fromStop, toStop,

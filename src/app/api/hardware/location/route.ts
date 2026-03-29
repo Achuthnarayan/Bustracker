@@ -69,24 +69,12 @@ async function triggerPushNotifications(bus: any, route: any) {
       if (userStopIndex === -1 || userStopIndex <= prevStopIndex) continue;
       const userStop = stops[userStopIndex];
 
-      // First segment: only count the remaining fraction + any stuck delay
-      const busSpeed = bus.speed || 0;
-      const isStuck = busSpeed < 2;
-      const extraDelayMins = isStuck
-        ? Math.max(0, (Date.now() - new Date(bus.lastUpdate).getTime()) / 60000 - 0.5)
-        : 0;
-
       let etaMinutes = 0;
-      for (let i = prevStopIndex; i < userStopIndex; i++) {
-        const recorded = await avgSegmentMinutes(route.routeId, stops[i].name, stops[i + 1].name);
-        const segMins = recorded ?? (stops[i + 1].expectedTime - stops[i].expectedTime);
-        if (i === prevStopIndex) {
-          const posRemaining = segMins * (1 - progress);
-          etaMinutes += isStuck ? Math.max(posRemaining, posRemaining + extraDelayMins) : posRemaining;
-        } else {
-          etaMinutes += segMins;
-        }
-      }
+      const busSpeed = (bus.speed && bus.speed > 2) ? bus.speed : 10; // min 10 km/h assumed
+      // GPS-based: sum distances from bus → each intermediate stop → user stop
+      // Use direct distance from bus to user stop for simplicity
+      const distToUserStop = haversine(bus.latitude, bus.longitude, userStop.latitude, userStop.longitude);
+      etaMinutes = Math.max(1, Math.round((distToUserStop / busSpeed) * 60));
 
       etaMinutes = Math.max(0, Math.round(etaMinutes));
       const threshold = sub.notifyBefore ?? 10;
