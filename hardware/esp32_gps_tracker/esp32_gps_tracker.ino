@@ -29,8 +29,8 @@
 
 // ΓöÇΓöÇ CONFIG ΓÇö change these for each bus ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const char* BUS_ID       = "KL07-BUS01";   // Must match seed data
-const char* WIFI_SSID    = "YOUR_WIFI_SSID";
-const char* WIFI_PASS    = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID    = "POCO X3 Pro";
+const char* WIFI_PASS    = "12345543";
 
 // Server URL ΓÇö use your Vercel URL in production, localhost for testing
 const char* SERVER_URL   = "https://bustracker-two.vercel.app/api/hardware/location";
@@ -66,7 +66,7 @@ void connectWiFi() {
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
   int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+  while (WiFi.status() != WL_CONNECTED && attempts < 40) {
     delay(500);
     Serial.print(".");
     attempts++;
@@ -148,6 +148,14 @@ void loop() {
   // Feed GPS data into TinyGPS++ parser
   while (gpsSerial.available() > 0) {
     gps.encode(gpsSerial.read());
+  }
+
+  // Always check WiFi and reconnect if dropped
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi dropped — reconnecting...");
+    WiFi.disconnect();
+    delay(1000);
+    connectWiFi();
   }
 
   unsigned long now = millis();
